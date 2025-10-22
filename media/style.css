@@ -216,9 +216,6 @@ code {
   background-color: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-hoverBackground));
 }
 
-/* ------------- Markdown Styling ------------- */
-
-/* Stilurile pentru elementele Markdown în mesajele botului */
 .message.bot h1, 
 .message.bot h2, 
 .message.bot h3, 
@@ -255,8 +252,6 @@ code {
   line-height: 1.5;
 }
 
-/* Păstrăm stilurile existente pentru pre și code, 
-   dar ne asigurăm că funcționează corect cu Markdown */
 .message.bot pre {
   background-color: var(--vscode-textBlockQuote-background);
   padding: 10px;
@@ -325,7 +320,6 @@ code {
   margin: 1em 0;
 }
 
-/* Stiluri pentru elemente suplimentare de Markdown */
 .message.bot img {
   max-width: 100%;
   height: auto;
@@ -349,7 +343,6 @@ code {
   border-radius: 2px;
 }
 
-/* Îmbunătățiri pentru lizibilitatea codului în blocurile de cod Markdown */
 .message.bot pre::-webkit-scrollbar {
   height: 8px;
 }
