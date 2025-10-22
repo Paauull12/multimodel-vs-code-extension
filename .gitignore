@@ -53,3 +53,14 @@ nyc_output/
 
 # Configuration files
 *config.js
+
+# LaTex generated files
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.toc
+*.synctex.gz
+*.bbl
+*.blg
