@@ -12,10 +12,30 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "architecturechat-sidebar",
+          "title": "Architecture Chat",
+          "icon": "media/chat-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "architecturechat-sidebar": [
+        {
+          "type": "webview",
+          "id": "architecturechat.chatView",
+          "name": "Chat",
+          "icon": "media/chat-icon.svg",
+          "contextualTitle": "ArchitectureChat"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "multimodel-agent-extension.helloWorld",
-        "title": "Hello World"
+        "command": "architecturechat.clearChat",
+        "title": "Architecture Chat: Clear Chat History"
       }
     ]
   },
