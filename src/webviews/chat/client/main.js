@@ -1,92 +1,367 @@
-// Access the editor API bridge for communication
-const vsCodeApi = acquireVsCodeApi(); 
+(function() {
+    // Access the editor API bridge for communication
+    const vsCodeApi = acquireVsCodeApi(); 
+    
+    // DOM elements
+    const chatMessagesDisplay = document.getElementById('messages');
+    const userInput = document.getElementById('messageInput');
+    const sendMsgButton = document.getElementById('sendButton');
+    const refreshButton = document.getElementById('refreshButton');
+    const attachButton = document.getElementById('attachButton');
+    const fileInput = document.getElementById('fileInput');
+    const attachedFilesContainer = document.getElementById('attachedFiles');
 
-const chatMessagesDisplay = document.getElementById('messages');
-const userInput = document.getElementById('messageInput');
-const sendMsgButton = document.getElementById('sendButton');
-const clearHistoryButton = document.getElementById('clearButton');
+    // State
+    let attachedFiles = [];
 
-// Notify the extension that the webview is ready
-vsCodeApi.postMessage({ command: 'webviewReady' }); 
-
-/** 
- * Sends user message to the editor extension backend. 
- */
-function handleSendMessage() { 
-    const text = userInput.value;
-    if (text.trim() === '') {
-        return;
+    // Configure marked.js for markdown parsing
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+        });
     }
-    
-    // Post message to the extension backend
-    vsCodeApi.postMessage({ command: 'sendMessage', text });
-    userInput.value = '';
-}
 
-/** 
- * Sends command to clear the conversation history. 
- */
-function handleClearHistory() { 
-    vsCodeApi.postMessage({ command: 'clearChat' });
-}
-
-/** 
- * Safely escapes HTML characters to prevent XSS. 
- */
-function sanitizeHtml(text) { 
-    return text.replace(/&/g, "&amp;")
-               .replace(/</g, "&lt;")
-               .replace(/>/g, "&gt;")
-               .replace(/"/g, "&quot;")
-               .replace(/'/g, "&#039;");
-}
-
-/** 
- * Creates and appends a new message element to the chat interface. 
- * @param message The message object containing text, sender, and metadata.
- */
-function appendMessageToChat(message) { 
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message ' + message.sender;
-    
-    // Check for code and markdown rendering
-    if (message.isCode) {
-        // Render raw code, ensuring inner HTML is sanitized
-        messageElement.innerHTML = '<pre><code>' + sanitizeHtml(message.text) + '</code></pre>';
-    } else if (message.sender === 'bot') {
-        // Render bot message
-        messageElement.innerHTML = marked.parse(message.text);
-    } else {
-        // Render user text, sanitizing content
-        messageElement.innerHTML = sanitizeHtml(message.text).replace(/\n/g, '<br>');
+    /** 
+     * Safely escapes HTML characters to prevent XSS. 
+     */
+    function sanitizeHtml(text) { 
+        return text.replace(/&/g, "&amp;")
+                   .replace(/</g, "&lt;")
+                   .replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;")
+                   .replace(/'/g, "&#039;");
     }
-    
-    const timestampEl = document.createElement('div');
-    timestampEl.className = 'time-stamp';
-    timestampEl.textContent = message.timestamp || '';
-    messageElement.appendChild(timestampEl);
-    
-    chatMessagesDisplay.appendChild(messageElement);
-    
-    // Auto-scroll to the bottom
-    chatMessagesDisplay.scrollTop = chatMessagesDisplay.scrollHeight;
-}
 
-sendMsgButton.addEventListener('click', handleSendMessage);
-clearHistoryButton.addEventListener('click', handleClearHistory);
-userInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        handleSendMessage();
-    }
-});
+    /**
+     * Creates a message element with modern styling
+     */
+    function createMessageElement(text, sender, timestamp, isCode) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `message-wrapper ${sender}`;
 
-// Router for messages received from the editor extension backend
-window.addEventListener('message', (event) => {
-    const message = event.data;
-    if (message.command === 'receiveMessage') {
-        appendMessageToChat(message.message);
-    } else if (message.command === 'clearChat') {
-        chatMessagesDisplay.innerHTML = 
-            '<div class="welcome-message">How can I help you today?</div>';
+        // Create avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = sender === 'user' ? 'U' : 'AI';
+
+        // Create content container
+        const content = document.createElement('div');
+        content.className = 'message-content';
+
+        // Create header with sender name and timestamp
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        
+        const senderLabel = document.createElement('span');
+        senderLabel.className = 'message-sender';
+        senderLabel.textContent = sender === 'user' ? 'You' : 'Assistant';
+        
+        const timeLabel = document.createElement('span');
+        timeLabel.className = 'message-time';
+        timeLabel.textContent = timestamp || '';
+
+        header.appendChild(senderLabel);
+        header.appendChild(timeLabel);
+
+        // Create message bubble
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        
+        // Handle different message types
+        if (isCode) {
+            messageText.innerHTML = '<pre><code>' + sanitizeHtml(text) + '</code></pre>';
+        } else if (sender === 'bot' && typeof marked !== 'undefined') {
+            messageText.innerHTML = marked.parse(text);
+        } else {
+            messageText.innerHTML = sanitizeHtml(text).replace(/\n/g, '<br>');
+        }
+
+        bubble.appendChild(messageText);
+        content.appendChild(header);
+        content.appendChild(bubble);
+
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(content);
+
+        return wrapper;
     }
-});
+
+    /**
+     * Creates a typing indicator for bot responses
+     */
+    function createTypingIndicator() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'message-wrapper bot';
+        wrapper.id = 'typing-indicator';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar bot-avatar';
+        avatar.textContent = 'AI';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+
+        content.appendChild(indicator);
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(content);
+
+        return wrapper;
+    }
+
+    /**
+     * Shows typing indicator
+     */
+    function showTypingIndicator() {
+        const existing = document.getElementById('typing-indicator');
+        if (existing) {
+            return;
+        }
+
+        const indicator = createTypingIndicator();
+        chatMessagesDisplay.appendChild(indicator);
+        
+        chatMessagesDisplay.scrollTo({
+            top: chatMessagesDisplay.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+
+    /**
+     * Removes typing indicator
+     */
+    function hideTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    /** 
+     * Creates and appends a new message element to the chat interface. 
+     */
+    function appendMessageToChat(message) { 
+        const welcomeMessage = chatMessagesDisplay.querySelector('.welcome-message');
+        if (welcomeMessage) {
+            welcomeMessage.remove();
+        }
+
+        const messageElement = createMessageElement(
+            message.text,
+            message.sender,
+            message.timestamp,
+            message.isCode
+        );
+        
+        chatMessagesDisplay.appendChild(messageElement);
+        
+        setTimeout(() => {
+            chatMessagesDisplay.scrollTo({
+                top: chatMessagesDisplay.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 10);
+    }
+
+    /**
+     * Updates the send button state based on input
+     */
+    function updateSendButtonState() {
+        const hasText = userInput.value.trim().length > 0;
+        const hasFiles = attachedFiles.length > 0;
+        sendMsgButton.disabled = !hasText && !hasFiles;
+    }
+
+    /**
+     * Renders attached files
+     */
+    function renderAttachedFiles() {
+        if (attachedFiles.length === 0) {
+            attachedFilesContainer.classList.add('hidden');
+            attachedFilesContainer.innerHTML = '';
+            return;
+        }
+
+        attachedFilesContainer.classList.remove('hidden');
+        attachedFilesContainer.innerHTML = '';
+
+        attachedFiles.forEach((file, index) => {
+            const chip = document.createElement('div');
+            chip.className = 'file-chip';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'file-chip-name';
+            nameSpan.textContent = file.name;
+            nameSpan.title = file.name;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'file-chip-remove';
+            removeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+            removeBtn.onclick = () => removeFile(index);
+
+            chip.appendChild(nameSpan);
+            chip.appendChild(removeBtn);
+            attachedFilesContainer.appendChild(chip);
+        });
+    }
+
+    /**
+     * Removes a file from attached files
+     */
+    function removeFile(index) {
+        attachedFiles.splice(index, 1);
+        renderAttachedFiles();
+        updateSendButtonState();
+    }
+
+    /**
+     * Handles file selection
+     */
+    function handleFileSelect(event) {
+        const files = Array.from(event.target.files || []);
+        
+        files.forEach(file => {
+            // Avoid duplicates
+            if (!attachedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                attachedFiles.push({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type
+                });
+            }
+        });
+
+        renderAttachedFiles();
+        updateSendButtonState();
+        
+        // Reset file input
+        fileInput.value = '';
+    }
+
+    /** 
+     * Sends user message to the editor extension backend. 
+     */
+    function handleSendMessage() { 
+        const text = userInput.value.trim();
+        
+        if (!text && attachedFiles.length === 0) {
+            return;
+        }
+        
+        // Prepare message data
+        const messageData = {
+            text: text,
+            files: attachedFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))
+        };
+
+        // Clear input and reset
+        userInput.value = '';
+        attachedFiles = [];
+        renderAttachedFiles();
+        adjustTextareaHeight();
+        updateSendButtonState();
+        
+        // Post message to the extension backend
+        vsCodeApi.postMessage({ 
+            command: 'sendMessage', 
+            text: text,
+            files: messageData.files
+        });
+        
+        // Disable send button briefly
+        sendMsgButton.disabled = true;
+        setTimeout(() => {
+            updateSendButtonState();
+        }, 500);
+    }
+
+    /** 
+     * Refreshes/clears the conversation. 
+     */
+    function handleRefresh() { 
+        vsCodeApi.postMessage({ command: 'clearChat' });
+    }
+
+    /**
+     * Clears the chat display
+     */
+    function clearChatDisplay() {
+        chatMessagesDisplay.innerHTML = `
+            <div class="welcome-message">
+                <svg class="welcome-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                </svg>
+                <div>How can I help you today?</div>
+            </div>
+        `;
+        
+        // Clear attached files
+        attachedFiles = [];
+        renderAttachedFiles();
+        updateSendButtonState();
+    }
+
+    /**
+     * Adjusts textarea height based on content
+     */
+    function adjustTextareaHeight() {
+        userInput.style.height = 'auto';
+        const newHeight = Math.min(userInput.scrollHeight, 200);
+        userInput.style.height = newHeight + 'px';
+    }
+
+    // Event listeners
+    sendMsgButton.addEventListener('click', handleSendMessage);
+    refreshButton.addEventListener('click', handleRefresh);
+    attachButton.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
+
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    });
+
+    userInput.addEventListener('input', () => {
+        adjustTextareaHeight();
+        updateSendButtonState();
+    });
+
+    // Router for messages received from the editor extension backend
+    window.addEventListener('message', (event) => {
+        const message = event.data;
+        
+        switch (message.command) {
+            case 'receiveMessage':
+                if (message.message.sender === 'user') {
+                    appendMessageToChat(message.message);
+                    showTypingIndicator();
+                } else if (message.message.sender === 'bot') {
+                    hideTypingIndicator();
+                    appendMessageToChat(message.message);
+                }
+                break;
+            
+            case 'clearChat':
+                clearChatDisplay();
+                break;
+        }
+    });
+
+    // Notify the extension that the webview is ready
+    vsCodeApi.postMessage({ command: 'webviewReady' }); 
+
+    // Initial setup
+    adjustTextareaHeight();
+    updateSendButtonState();
+})();

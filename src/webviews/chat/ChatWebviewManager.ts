@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
 import { generateWebviewContent } from '../chatWebviewGenerator';
 
-/**
- * Provides the webview for the chat interface in the sidebar.
- */
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'analyzer.chatView';
     private _view?: vscode.WebviewView;
@@ -20,14 +17,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.options = {
             enableScripts: true,
             localResourceRoots: [
+                vscode.Uri.joinPath(this._extensionUri, 'out'),
                 vscode.Uri.joinPath(this._extensionUri, 'dist'),
+                vscode.Uri.joinPath(this._extensionUri, 'src'),
+                vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews'),
                 vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'static')
             ]
         };
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-        // Handle messages from the webview
         webviewView.webview.onDidReceiveMessage(
             message => {
                 switch (message.command) {
@@ -50,7 +49,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             return;
         }
 
-        // Echo the user message back first
         this._view.webview.postMessage({
             command: 'receiveMessage',
             message: {
@@ -60,7 +58,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             }
         });
 
-        // Send a bot response (this is where you'd integrate your AI model)
         setTimeout(() => {
             this._view?.webview.postMessage({
                 command: 'receiveMessage',
@@ -84,25 +81,21 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
-        // Get URIs for resources based on your actual folder structure
-        const styleUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(
-                this._extensionUri, 
-                'src', 
-                'webviews', 
-                'static', 
-                'styles', 
-                'webview.css'
-            )
-        );
+        const stylePaths = [
+            vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'static', 'styles', 'webview.css'),
+            vscode.Uri.joinPath(this._extensionUri, 'out', 'webviews', 'static', 'styles', 'webview.css'),
+            vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview.css')
+        ];
         
-        const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(
-                this._extensionUri, 
-                'dist', 
-                'webview-main.js'
-            )
-        );
+        const styleUri = webview.asWebviewUri(stylePaths[0]);
+        
+        const scriptPaths = [
+            vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview-main.js'),
+            vscode.Uri.joinPath(this._extensionUri, 'out', 'webviews', 'chat', 'client', 'main.js'),
+            vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'chat', 'client', 'main.js')
+        ];
+        
+        const scriptUri = webview.asWebviewUri(scriptPaths[0]);
 
         const markedUri = webview.asWebviewUri(
             vscode.Uri.joinPath(
@@ -114,6 +107,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 'marked.min.js'
             )
         );
+
+        console.log('CSS URI:', styleUri.toString());
+        console.log('Script URI:', scriptUri.toString());
+        console.log('Marked URI:', markedUri.toString());
 
         return generateWebviewContent(
             styleUri.toString(),
