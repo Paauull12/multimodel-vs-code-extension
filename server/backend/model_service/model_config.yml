@@ -1,0 +1,19 @@
+models:
+  gpt2-small:
+    type: huggingface
+    name: gpt2
+    task: text-generation
+    device: cpu
+    max_length: 100
+
+  sentiment-analyzer:
+    type: huggingface
+    name: distilbert-base-uncased-finetuned-sst-2-english
+    task: sentiment-analysis
+    device: cpu
+
+  custom-model:
+    type: local
+    path: ./models/custom_model
+    task: text-generation
+    device: cpu
