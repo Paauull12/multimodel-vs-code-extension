@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'auth_service',
     'model_service',
+    'main_chatbot'
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,45 @@
+agents:
+  main:
+    name: deepseek/deepseek-chat-v3.1:free
+    task: orchestration_model
+    max_tokens: 12500
+# response example for main chatbot
+# {
+#   target: user / request_files / architecture / builder / reviewer
+#   files_requested: ["", "", ""] only if request_files
+#   regex_to_run: ["", "", ""] only if request_files
+#   response: "" only if final response to user
+#   context: only if one of the 3 sub-bots
+#   tasks: ["", "", ""] only if one of the 3 sub-bots
+# }
+
+  architecture:
+    name: deepseek/deepseek-chat-v3.1:free
+    task: architecture-planner
+    max_tokens: 12500
+#  {
+#    "ana are mere"
+#  }
+#  {request from user + the architect said that "ana are mere"
+  builder:
+    name: deepseek/deepseek-chat-v3.1:free
+    task: builder
+    max_tokens: 12500
+
+  review:
+    name: deepseek/deepseek-chat-v3.1:free
+    task: review_model
+    max_tokens: 12500
+
+  mock:
+    name: deepseek/deepseek-chat-v3.1:free
+    task: mocking
+    max_tokens: 1010
+
+#  {
+#    errors:{
+#             numefisier: "erorir""
+#    }
+#    target: builder / finish
+#    summary:
+#  }

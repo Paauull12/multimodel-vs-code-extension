@@ -97,6 +97,7 @@ test-results/
 dmypy.json
 .pyre/
 .ruff_cache/
+.env
 
 # ====================
 # Misc
