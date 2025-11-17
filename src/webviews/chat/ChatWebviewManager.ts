@@ -27,21 +27,38 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-        webviewView.webview.onDidReceiveMessage(
-            message => {
-                switch (message.command) {
-                    case 'webviewReady':
-                        console.log('Webview is ready');
-                        break;
-                    case 'sendMessage':
-                        this._handleUserMessage(message.text);
-                        break;
-                    case 'clearChat':
-                        this._clearChat();
-                        break;
-                }
-            }
-        );
+        webviewView.webview.onDidReceiveMessage(message => {
+        switch (message.command) {
+
+            case 'webviewReady':
+                console.log('Webview is ready');
+                break;
+
+            case 'sendMessage':
+                this._handleUserMessage(message.text);
+                break;
+
+            case 'clearChat':
+                this._clearChat();
+                break;
+
+            case 'securityAudit':
+                this._runSecurityAudit();
+                break;
+
+            case 'reviewPullRequest':
+                this._reviewPullRequest(message.url);
+                break;
+
+            case 'checkRules':
+                this._checkRules(message.code);
+                break;
+
+            default:
+                console.warn("Unknown command from webview:", message);
+        }
+});
+
     }
 
     private _handleUserMessage(text: string) {
@@ -108,14 +125,69 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             )
         );
 
+        // Main script (chat logic)
+        const mainScriptUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(
+                this._extensionUri,
+                "src",
+                "webviews",
+                "chat",
+                "client",
+                "main.js"
+            )
+        );
+
+        // Router script (view switching)
+        const routerScriptUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(
+                this._extensionUri,
+                "src",
+                "webviews",
+                "chat",
+                "client",
+                "viewRouter.js"
+            )
+        );
+
         console.log('CSS URI:', styleUri.toString());
         console.log('Script URI:', scriptUri.toString());
         console.log('Marked URI:', markedUri.toString());
 
         return generateWebviewContent(
-            styleUri.toString(),
-            scriptUri.toString(),
-            markedUri.toString()
-        );
+        styleUri.toString(),
+        mainScriptUri.toString(),
+        markedUri.toString()
+    ).replace(
+        "</body>",
+        `  <script src="${routerScriptUri}"></script>\n</body>`
+    );
     }
+
+    private _runSecurityAudit() {
+        vscode.window.showInformationMessage("Running Security Audit...");
+        // TODO: implement logic
+        this._view?.webview.postMessage({
+            command: "securityAuditResult",
+            output: "Security audit results will appear here."
+        });
+    }
+
+    private _reviewPullRequest(url: string) {
+        vscode.window.showInformationMessage("Reviewing PR: " + url);
+        // TODO: implement logic
+        this._view?.webview.postMessage({
+            command: "pullRequestResult",
+            output: `Pull request review for: ${url}`
+        });
+    }
+
+    private _checkRules(code: string) {
+        vscode.window.showInformationMessage("Checking rules...");
+        // TODO: implement logic
+        this._view?.webview.postMessage({
+            command: "rulesCheckResult",
+            output: `Rules check complete for:\n\n${code}`
+        });
+    }
+
 }

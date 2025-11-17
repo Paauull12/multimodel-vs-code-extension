@@ -4,6 +4,7 @@ body {
   font-family: var(--vscode-font-family);
   color: var(--vscode-foreground);
   height: 100vh;
+  /* min-width: 300px; */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -17,11 +18,19 @@ body {
   max-width: 100%;
 }
 
+.mess-container{
+  display: flex;
+  flex-direction: column;
+  height: 94vh;
+  max-width: 100%;
+}
+
 .header {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 8px 6px;
   background-color: var(--vscode-sideBar-background);
   border-bottom: 1px solid var(--vscode-panel-border);
   flex-shrink: 0;
@@ -40,30 +49,91 @@ body {
   align-items: center;
 }
 
-.icon-button {
-  width: 32px;
-  height: 32px;
+.refresh-button {
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: transparent;
   color: var(--vscode-foreground);
   border: none;
-  border-radius: 6px;
+  border-radius: 24px;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
-.icon-button:hover {
+.refresh-button:hover {
   background-color: var(--vscode-toolbar-hoverBackground);
 }
 
-.icon-button svg {
-  width: 18px;
-  height: 18px;
+.refresh-button svg {
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
+}
+.security-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ====== PR REVIEW UI ====== */
+.pr-review {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+}
+
+/* Title */
+.section-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--vscode-editor-foreground);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+/* Label & input */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground);
+}
+
+/* Input + button row */
+.pr-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pr-input-row input {
+    flex: 1;
+}
+
+/* Output container */
+.output-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.output-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--vscode-descriptionForeground);
 }
 
 .messages {
@@ -97,17 +167,29 @@ body {
   background: var(--vscode-scrollbarSlider-hoverBackground);
 }
 
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown-arrow {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
 .welcome-message {
   text-align: center;
   margin: 40px 20px;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--vscode-descriptionForeground);
   font-weight: 400;
 }
 
 .welcome-logo {
-  width: 48px;
-  height: 48px;
+  width: 45px;
+  height: 45px;
   margin: 0 auto 16px;
   opacity: 0.7;
 }
@@ -269,14 +351,15 @@ body {
 
 .input-wrapper {
   display: flex;
-  align-items: center;
+  align-items: center; 
   gap: 8px;
   background-color: var(--vscode-input-background);
   border: 1px solid var(--vscode-input-border);
   border-radius: 24px;
-  padding: 8px 12px;
+  padding: 6px 8px; 
   transition: border-color 0.15s ease;
 }
+
 
 .input-wrapper:focus-within {
   border-color: var(--vscode-focusBorder);
@@ -286,12 +369,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   background-color: transparent;
   color: var(--vscode-foreground);
   border: none;
-  border-radius: 6px;
+  border-radius: 24px;
   cursor: pointer;
   transition: background-color 0.15s ease;
   flex-shrink: 0;
@@ -303,8 +386,8 @@ body {
 }
 
 .attach-button svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   stroke: currentColor;
   stroke-width: 2;
 }
@@ -318,15 +401,17 @@ body {
   border: none;
   background: transparent;
   color: var(--vscode-input-foreground);
-  font-size: 14px;
+  font-size: 12px;
   font-family: var(--vscode-font-family);
-  padding: 6px 8px;
   resize: none;
   max-height: 200px;
   overflow-y: auto;
   line-height: 1.5;
-  min-height: 24px;
+  /* min-height: 32px;  */
+  display: flex;
+  align-items: center; 
 }
+
 
 #messageInput:focus {
   outline: none;
@@ -340,8 +425,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   background-color: var(--vscode-button-background);
   color: var(--vscode-button-foreground);
   border: none;
@@ -363,8 +448,8 @@ body {
 }
 
 .send-button svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2.5;
@@ -581,4 +666,193 @@ body {
 
 .hidden {
   display: none !important;
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+  margin-left: 12px;
+}
+
+.dropdown-toggle {
+  background: var(--vscode-input-background);
+  color: var(--vscode-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  padding: 4px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+}
+
+.dropdown-item {
+  padding: 6px 8px;
+  text-align: left;
+  background: transparent;
+  color: var(--vscode-foreground);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Microphone button */
+.mic-button {
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+}
+
+.system-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 12px;
+}
+
+.primary-button {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.text-input {
+  width: 90%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-input-border);
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+}
+
+.output-box {
+  width: 90%;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-panel-border);
+  white-space: pre-wrap;
+}
+
+.input-row {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    border-top: 1px solid var(--vscode-panel-border);
+}
+
+.input-row textarea {
+    flex: 1;
+}
+
+.icon-button {
+    background: var(--vscode-button-secondaryBackground);
+    border: none;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    color: var(--vscode-button-secondaryForeground);
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.check-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* Title area */
+.section-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--vscode-editor-foreground);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+/* Form blocks */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground);
+}
+
+/* Larger text area */
+.code-box {
+    min-height: 140px;
+    resize: vertical;
+}
+
+/* Button section */
+.actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 6px;
+}
+
+/* Output */
+.output-section {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.output-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--vscode-descriptionForeground);
 }
