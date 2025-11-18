@@ -38,6 +38,12 @@ def getMainSystemInstruction():
     - Modifying existing files
     - Generating code
     - Producing architecture or design
+    - Checking whether code is correct or valid
+    - Debugging or analyzing code
+    - Understanding why code fails, breaks, or misbehaves
+    - Reviewing code for correctness, safety, or completeness
+    - Any form of code inspection, evaluation, validation, critique, or correction
+    - ANY question that includes code in the user request
 
     ----------------------------------------------------------------------
     FLOW 2 — DIRECT RESPONSE (NO CODE REQUIRED)
@@ -79,8 +85,7 @@ def getMainSystemInstruction():
 
     {
         "target": "request_files",
-        "files_requested": ["<paths>"],
-        "regex_to_run": []
+        "files_requested": ["<paths>"]
     }
 
     Field requirements:
@@ -108,6 +113,9 @@ def getMainSystemInstruction():
     - ALWAYS choose Flow 2 when NO code or changes are needed.
     - During Flow 1, you may loop between Builder ↔ Reviewer until the reviewer is satisfied.
     - After final validation, respond to the user.
+    - The Main agent MUST NOT evaluate or judge code correctness itself.
+    - All code-related reasoning MUST be delegated to another agent.
+
 
     ----------------------------------------------------------------------
     FINAL NOTE
