@@ -1,0 +1,25 @@
+agents:
+  main:
+    name: openai/gpt-5.1-codex-mini
+    task: orchestration_model
+    max_tokens: 12500
+
+  architecture:
+    name: openai/gpt-5.1-codex-mini
+    task: architecture-planner
+    max_tokens: 12500
+
+  builder:
+    name: openai/gpt-5.1-codex-mini
+    task: builder
+    max_tokens: 12500
+
+  review:
+    name: openai/gpt-5.1-codex-mini
+    task: review_model
+    max_tokens: 12500
+
+  mock:
+    name: openai/gpt-5.1-codex-mini
+    task: mocking
+    max_tokens: 1010

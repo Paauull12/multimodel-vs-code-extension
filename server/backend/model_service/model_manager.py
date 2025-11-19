@@ -1,52 +1,152 @@
+import asyncio
+import json
+import os
+import re
+
+import httpx
 import yaml
-from transformers import pipeline
-import threading
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class ModelManager:
     _instance = None
-    _lock = threading.Lock()
 
     def __new__(cls):
         if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self):
-        if not hasattr(self, 'initialized'):
-            self.models = {}
+        if not hasattr(self, "initialized"):
             self.config = {}
+            self.api_key = os.getenv("MODEL_MANAGER_API_KEY")
+            self.base_url = os.getenv("MODEL_MANAGER_BASE_URL", "https://openrouter.ai/api/v1/chat/completions")
             self.initialized = True
             self.load_config()
 
-    def load_config(self, config_path='model_config.yml'):
-        with open(config_path, 'r') as f:
-            self.config = yaml.safe_load(f)
+    def load_config(self, config_path="templates/main_chatbot_config.yml"):
+        with open(config_path, 'r') as config_file:
+            self.config = yaml.safe_load(config_file)
 
-    def load_model(self, model_id):
-        if model_id in self.models:
-            return self.models[model_id]
+    def get_agent_config(self, agent_name):
+        return self.config.get("agents", {}).get(agent_name)
 
-        if model_id not in self.config['models']:
-            raise ValueError(f"Model {model_id} not in config")
+    def extract_json(self, text):
+        text = text.strip()
 
-        model_config = self.config['models'][model_id]
+        try:
+            return json.loads(text)
+        except Exception as e:
+            pass
 
-        if model_config['type'] == 'huggingface':
-            model = pipeline(
-                task=model_config['task'],
-                model=model_config['name'],
-                device=0 if model_config['device'] == 'cuda' else -1
+        json_pattern = r'```json\s*(.*?)\s*```'
+        match = re.search(json_pattern, text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(1))
+            except json.JSONDecodeError:
+                pass
+
+        code_pattern = r'```\s*(.*?)\s*```'
+        match = re.search(code_pattern, text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(1))
+            except json.JSONDecodeError:
+                pass
+
+        json_object_pattern = r'\{.*\}'
+        match = re.search(json_object_pattern, text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except json.JSONDecodeError:
+                pass
+
+        raise ValueError(f"Could not extract valid JSON from response: {text[:200]}...")
+
+    async def call_agent(self,
+                         agent_name,
+                         messages,
+                         response_type,
+                         temperature,
+                         **kwargs):
+        agent_config = self.get_agent_config(agent_name)
+
+        if not agent_config:
+            raise ValueError(f"Agent {agent_name} is not configured")
+
+        print(f"API Key: {self.api_key[:20]}..." if self.api_key else "NO API KEY")
+        print(f"Base URL: {self.base_url}")
+        print(f"Model: {agent_config['name']}")
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:8000",
+            "X-Title": "AI-Chatbot-Service",
+        }
+
+        payload = {
+            'model': agent_config["name"],
+            'messages': messages,
+            'max_tokens': agent_config.get("max_tokens", 4100),
+            'temperature': temperature,
+            **kwargs,
+        }
+
+        async with httpx.AsyncClient(timeout=120) as client:
+            response = await client.post(
+                self.base_url,
+                headers=headers,
+                json=payload,
             )
-            self.models[model_id] = model
-            return model
 
-        # TODO: Add local model loading
-        raise NotImplementedError(f"Type {model_config['type']} not implemented")
+            print(f"Response status: {response.status_code}")
 
-    def predict(self, model_id, text):
-        model = self.load_model(model_id)
-        result = model(text)
-        return result
+            if response.status_code != 200:
+                error_body = response.text
+                print(f"ERROR BODY: {error_body}")
+                try:
+                    error_json = response.json()
+                    print(f"ERROR JSON: {json.dumps(error_json, indent=2)}")
+                except:
+                    pass
+                response.raise_for_status()
+
+            result = response.json()
+            print(f"SUCCESS - Full response: {json.dumps(result, indent=2)[:1000]}")
+
+        if 'choices' not in result:
+            print(f"ERROR: No 'choices' in response. Keys: {result.keys()}")
+            raise ValueError(f"Invalid API response: {result}")
+
+        if len(result['choices']) == 0:
+            print("ERROR: Empty choices array")
+            raise ValueError("API returned empty choices")
+
+        content = result['choices'][0]['message']['content']
+        print(f"Content: {content[:500]}")
+
+        if response_type == 'json':
+            try:
+                return self.extract_json(content)
+            except ValueError as e:
+                print(f"Failed to parse JSON: {e}")
+                print(f"Plain text response: {content}")
+                return content
+        return content
+
+    def call_agent_sync(self,
+                        agent_name,
+                        messages,
+                        response_type,
+                        temperature,
+                        **kwargs):
+
+        return asyncio.run(
+            self.call_agent(agent_name, messages, response_type, temperature, **kwargs)
+        )
