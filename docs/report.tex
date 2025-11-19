@@ -7,6 +7,9 @@
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{graphicx}
+
 
 \setstretch{1.2}
 
@@ -16,26 +19,21 @@
 \titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
 \titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
 \titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titleformat{\paragraph}[block]{\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}{0pt}{1em}{0.5em}
+\titleformat{\subparagraph}[block]{\normalsize\bfseries}{\thesubparagraph}{1em}{}
+\titlespacing*{\subparagraph}{0pt}{1em}{0.5em}
+
 
 \title{\textbf{Local Multimodel Assistant for Visual Studio Code}}
 \date{}
 
-% -----------------------
-% FIRST PAGE SETUP
-% -----------------------
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{Babeș-Bolyai University}
-\fancyfoot[C]{\the\year}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
 \pagenumbering{gobble}
 
 \begin{document}
 
-% -----------------------
-% FIRST PAGE CONTENT
-% -----------------------
 \begin{titlepage}
     \centering
     BABE\c S BOLYAI UNIVERSITY, CLUJ NAPOCA, ROM\^ ANIA
@@ -210,5 +208,178 @@ Orchestration}}
 
 This summary provides an overview of the data sources, core algorithms, and key results from these recent works on 
 intelligent software assistants and LLM-based programming support systems.
+
+\section{Investigated Approaches}
+\subsection{Document Upload}
+
+\subsubsection{Data Indexing and Chunking}
+
+\paragraph{Importance of Chunking}
+Chunking constitutes a central preprocessing operation in Retrieval-Augmented Generation (RAG) pipelines. Its primary purpose is to partition long documents into smaller, semantically coherent segments that can be efficiently embedded, stored, retrieved, and interpreted by downstream language models. Chunking directly addresses several constraints of modern LLM-based architectures:
+
+\begin{itemize}
+    \item \textbf{Token Limit Constraints:} Large documents frequently exceed the context windows of modern LLMs. Chunking mitigates this issue by enabling processing in smaller, context-preserving units.
+    \item \textbf{Retrieval Accuracy:} Retrieval models (e.g., dense vector search, cosine similarity) perform significantly better when the indexed units contain a single, focused concept rather than multi-topic content.
+    \item \textbf{Context Preservation:} Maintaining local semantic coherence ensures that retrieved chunks provide relevant and meaningful information during generation.
+    \item \textbf{Computational Efficiency:} Smaller, well-defined chunks reduce embedding computation time and memory consumption.
+    \item \textbf{Flexibility Across Document Types:} Technical documents, policies, rule sets, and legal texts vary in structure; chunking must adapt accordingly.
+\end{itemize}
+
+Overall, chunking plays the role of an intermediary layer that bridges data retrieval and generative reasoning, ensuring accurate, traceable, and contextually grounded results. Without an adequate chunking strategy, RAG-based systems tend to hallucinate, lose context, or return irrelevant results.
+
+\paragraph{Types of Chunking}
+
+\subparagraph{Fixed-Size Chunking}
+A method in which the text is divided into uniform units based on a predefined token, word, or character count.
+
+\textbf{Advantages:} Simple to implement, scalable, predictable behavior.\\  
+\textbf{Disadvantages:} High risk of semantic fragmentation; unrelated information may accidentally be merged, thereby harming retrieval relevance.
+
+\subparagraph{Sentence-Based Chunking}
+The document is split according to natural sentence boundaries, optionally grouping consecutive sentences.
+
+\textbf{Advantages:} Preserves grammatical and semantic flow; improves relevance of retrieved chunks.\\  
+\textbf{Disadvantages:} Chunk sizes vary significantly; additional logic is required for grouping sentences.
+
+\subparagraph{Semantic-Based Chunking}
+The text is segmented based on semantic similarity or topic coherence, typically using cosine similarity between sentence embeddings.
+
+\textbf{Advantages:} Strongest preservation of semantic boundaries; high-quality retrieval performance; adaptable to heterogeneous document structures.\\  
+\textbf{Disadvantages:} Computationally more expensive; requires embedding inference during chunking.
+
+\subparagraph{Document-Specific Chunking}
+Chunking logic is adapted to the document’s intrinsic structure (e.g., headings, numbered lists, articles, subclauses, or tables).
+
+\textbf{Advantages:} Excellent contextual fidelity; ideal for legal, policy, and regulatory documents.\\  
+\textbf{Disadvantages:} Complex preprocessing requirements; dependent on accurate structure detection.
+
+\subparagraph{Agentic Chunking}
+Chunking designed around the operational tasks that an AI agent must perform (e.g., classification, retrieval, compliance checking).
+
+\textbf{Advantages:} Task-specific optimization, enhanced interpretability, suitable for multi-agent frameworks.\\  
+\textbf{Disadvantages:} Requires additional modeling and task understanding; harder to generalize.
+
+\subsubsection{Embedding}
+Embeddings encode text into high-dimensional vector representations that preserve semantic relationships. These vector representations are fundamental for similarity search, contextual retrieval, clustering, and semantic indexing.
+
+\subsubsection*{Types of Embedding Models}
+
+\paragraph{Word-Level Models}
+Examples: Word2Vec, GloVe, FastText.\\  
+Assign fixed vectors to words irrespective of context, useful for simple tasks, limited for nuanced semantic interpretation.
+
+\paragraph{Contextual Embedding Models}
+Examples: BERT, RoBERTa, sentence-transformers.\\ 
+Embeddings vary according to surrounding context, enabling deeper semantic understanding.
+
+\paragraph{Sentence and Document Embedding Models}
+Examples: Sentence-BERT, E5, OpenAI embeddings.\\
+Generate embeddings for entire sentences or paragraphs, making them highly suitable for retrieval tasks involving long-form documents.
+
+\subsubsection{Our Approach}
+
+\paragraph{Architecture Overview} 
+The implemented pipeline integrates several components designed to convert raw rule documents into structured compliance evaluations. The workflow proceeds as follows:
+
+\begin{center}
+\begin{tabular}{c}
+\textbf{Design Document (PDF/DOCX/TXT)} \\
+\quad $\downarrow$ Extract raw text \\
+\\
+\textbf{Semantic Chunker (MiniLM-L6-v2, threshold 0.7)} \\
+\quad $\downarrow$ Generate chunks and embeddings \\
+\\
+\textbf{Document Retriever (Cosine Similarity)} \\
+\quad $\downarrow$ Retrieve Top-K most relevant chunks \\
+\\
+\textbf{Reasoner (Llama 3.1-70B Instruct)} \\
+\quad $\downarrow$ Structured JSON response \\
+\\
+\textbf{Compliance Result (violations, explanations, fixes)} \\
+\end{tabular}
+\end{center}
+
+The architecture is optimized for rule documents, policy compliance tasks, and code-to-policy alignment scenarios. Each stage is modular, allowing future improvements (e.g., alternative embedding models, multi-agent orchestration, or hybrid symbolic–neural reasoning models).
+
+\paragraph{Chunking Strategy}
+
+The system employs a \textbf{semantic-based chunking strategy}. The segmentation pipeline operates as follows:
+
+\begin{enumerate}
+    \item The input document is first split into individual sentences.
+    \item Each sentence is embedded using the all-MiniLM-L6-v2 sentence transformer.
+    \item Cosine similarity is computed between consecutive sentence embeddings.
+    \item Sentences are grouped into chunks if their semantic similarity exceeds a selected threshold.
+    \item Each resulting chunk forms a self-contained rule, requirement, or policy element.
+\end{enumerate}
+
+Multiple thresholds were experimentally evaluated to determine the optimal configuration. The results are summarized below:
+
+\begin{center}
+\begin{tabular}{|c|p{9cm}|}
+\hline
+\textbf{Threshold} & \textbf{Observations} \\ \hline
+0.3 & Produced excessively broad chunks; many unrelated concepts merged. \\ \hline
+0.5 & Improved grouping but still merged large sections of design documents. \\ \hline
+\textbf{0.7} & \textbf{Optimal balance: coherent chunks of manageable size; highest retrieval quality.} \\ \hline
+0.9 & Too strict; resulted in excessively fragmented chunks. \\ \hline
+\end{tabular}
+\end{center}
+
+As shown in Figure~\ref{fig:chunk_thresholds}, the threshold of 0.7 ensures that each chunk is semantically meaningful and appropriate for later retrieval by the compliance engine.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/chunking_performance.png.png}
+    \caption{Threshold and maximum chunking tests}
+    \label{fig:chunk_thresholds}
+\end{figure}
+
+\paragraph{Embedding Model Selection}
+
+The system uses the \textbf{all-MiniLM-L6-v2} embedding model, selected due to its performance–efficiency tradeoff and suitability for local execution. Its main characteristics are:
+
+\begin{itemize}
+    \item \textbf{Model size:} 22.7M parameters ($\sim$80 MB)
+    \item \textbf{Embedding dimensionality:} 384
+    \item \textbf{Training data:} Approximately 1 billion sentence pairs, including datasets such as Reddit (2015–2018), S2ORC citation pairs, and WikiAnswers.
+    \item \textbf{Execution environment:} Fully local, ensuring privacy and avoiding vendor lock-in.
+\end{itemize}
+
+This model provides robust semantic discrimination while maintaining fast inference times, making it ideal for compliance workflows involving frequent document updates.
+
+\paragraph{Reasoner: LLM-Based Compliance Engine}
+
+To evaluate compliance between code snippets and document rules, the system uses the \textbf{Llama 3.1-70B Instruct} model hosted on the Hugging Face Inference API. The model performs the following tasks:
+
+\begin{itemize}
+    \item Interpreting rules extracted from the uploaded document.
+    \item Comparing them to a given code sample.
+    \item Identifying violations or missing implementations.
+    \item Generating human-readable explanations and potential remediation steps.
+\end{itemize}
+
+\textbf{Model specifications:}
+\begin{itemize}
+    \item \textbf{Parameters:} 70 billion
+    \item \textbf{Training data:} Instruction datasets from books, academic corpora, technical specifications, and over 25 million synthetic examples.
+    \item \textbf{Output format:} A structured JSON object for programmatic consumption.
+\end{itemize}
+
+\subparagraph{Example Output}
+
+\begin{verbatim}
+{
+  "compliant": false,
+  "violations": [
+    { "rule": "...", "description": "...", "fix": "..." }
+  ],
+  "missing_implementations": [],
+  "summary": "..."
+}
+\end{verbatim}
+
+\section{Application}
+
 
 \end{document}

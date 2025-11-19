@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  19 NOV 2025 18:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  19 NOV 2025 19:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -228,6 +228,21 @@ Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
 \f@nch@widthC=\skip67
 \f@nch@widthR=\skip68
 \@temptokenb=\toks21
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen160
+\Gin@req@width=\dimen161
 ) (/usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count287
@@ -235,24 +250,24 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 ) (./report.aux)
 \openout1 = `report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -288,12 +303,30 @@ LaTeX Font Info:    ... okay on input line 34.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-Package hyperref Info: Link coloring OFF on input line 34.
+Package hyperref Info: Link coloring OFF on input line 35.
 (./report.out) (./report.out)
 \@outlinefile=\write3
 \openout3 = `report.out'.
 
-
+ (/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count288
+\scratchdimen=\dimen162
+\scratchbox=\box55
+\nofMPsegments=\count289
+\nofMParguments=\count290
+\everyMPshowfont=\toks22
+\MPscratchCnt=\count291
+\MPscratchDim=\dimen163
+\MPnumerator=\count292
+\makeMPintoPDFobject=\count293
+\everyMPtoPDFconversion=\toks23
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+))
 
 [1
 
@@ -327,24 +360,17 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 
 
 
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.66 \newpage
+l.64 \newpage
               [1]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <14.4> on input line 71.
+(Font)              <14.4> on input line 69.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 71.
+(Font)              <10> on input line 69.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 71.
+(Font)              <7> on input line 69.
 
 
 LaTeX Warning: No \author given.
@@ -352,7 +378,7 @@ LaTeX Warning: No \author given.
 
 
 [1]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 99.
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 97.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
@@ -362,7 +388,7 @@ File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 [3]
 
 [4]
-Overfull \hbox (6.44957pt too wide) in paragraph at lines 196--196
+Overfull \hbox (6.44957pt too wide) in paragraph at lines 194--194
 |[][]\T1/lmr/bx/n/14.4 Enhancing State Aware-ness for Multi-Step LLM Agent Tasks[]| 
  []
 
@@ -370,27 +396,55 @@ Overfull \hbox (6.44957pt too wide) in paragraph at lines 196--196
 
 [5]
 
-[6] (./report.aux)
+[6]
+
+[7]
+
+[8]
+
+[9]
+
+[10{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
+Underfull \hbox (badness 1112) in paragraph at lines 325--325
+[]\T1/lmr/m/n/12 Too strict; re-sulted in ex-ces-sively frag-mented
+ []
+
+<assets/chunking_performance.png.png, id=151, 1780.6525pt x 988.69376pt>
+File: assets/chunking_performance.png.png Graphic file (type png)
+<use assets/chunking_performance.png.png>
+Package pdftex.def Info: assets/chunking_performance.png.png  used on input line 333.
+(pdftex.def)             Requested size: 362.37569pt x 201.20508pt.
+
+
+[11 <./assets/chunking_performance.png.png>]
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 371.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/lm/t1lmtt.fd
+File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+
+[12]
+
+[13] (./report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: FAA5C60749E327FECAEAF30C2D96AD7C;1840.
+(rerunfilecheck)             Checksum: B6913025286F86BF767A3F385E0B77EC;2688.
  ) 
 Here is how much of TeX's memory you used:
- 9552 strings out of 473190
- 150422 string characters out of 5715800
- 556038 words of memory out of 5000000
- 32686 multiletter control sequences out of 15000+600000
- 618632 words of font info for 69 fonts, out of 8000000 for 9000
+ 10461 strings out of 473190
+ 164340 string characters out of 5715800
+ 564042 words of memory out of 5000000
+ 33543 multiletter control sequences out of 15000+600000
+ 615962 words of font info for 69 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,17n,79p,574b,558s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri12.pfb>
-Output written on report.pdf (8 pages, 102491 bytes).
+ 75i,11n,79p,574b,589s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt12.pfb>
+Output written on report.pdf (15 pages, 251304 bytes).
 PDF statistics:
- 128 PDF objects out of 1000 (max. 8388607)
- 107 compressed objects within 2 object streams
- 17 named destinations out of 1000 (max. 500000)
- 73 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 204 PDF objects out of 1000 (max. 8388607)
+ 173 compressed objects within 2 object streams
+ 36 named destinations out of 1000 (max. 500000)
+ 126 words of extra memory for PDF output out of 10000 (max. 10000000)
 
