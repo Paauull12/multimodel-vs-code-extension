@@ -1,0 +1,21 @@
+# VS Code directories
+.vscode/**
+.vscode-test/**
+**/.vscode-test.*
+
+# Source and build output
+src/**
+out/**
+**/*.ts
+**/*.map
+
+# Dependencies
+node_modules/**
+
+# Configuration and documentation
+.gitignore
+.yarnrc
+webpack.config.js
+vsc-extension-quickstart.md
+**/tsconfig.json
+**/eslint.config.mjs

@@ -1,0 +1,105 @@
+# ====================
+# Python
+# ====================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ====================
+# Django
+# ====================
+*.log
+*.pot
+*.pyc
+db.sqlite3
+db.sqlite3-journal
+
+# Media and static files
+media/
+staticfiles/
+static/
+
+# Django migrations (optional: uncomment to ignore generated migrations)
+# */migrations/
+# !*/migrations/__init__.py
+
+# ====================
+# Environment & secrets
+# ====================
+.env.local
+.env.dev
+.env.prod
+.env.test
+*.env
+.envrc
+
+# ====================
+# IDEs and editors
+# ====================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ====================
+# OS generated files
+# ====================
+.DS_Store
+Thumbs.db
+
+# ====================
+# Coverage / testing
+# ====================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+test-results/
+
+# ====================
+# MyPy / Pyre / Ruff / etc.
+# ====================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.ruff_cache/
+
+# ====================
+# Misc
+# ====================
+logs/
+*.log
