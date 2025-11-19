@@ -1,6 +1,6 @@
 agents:
   main:
-    name: deepseek/deepseek-chat-v3.1:free
+    name: deepseek/deepseek-r1-distill-llama-70b:free
     task: orchestration_model
     max_tokens: 12500
 # response example for main chatbot
@@ -14,7 +14,7 @@ agents:
 # }
 
   architecture:
-    name: deepseek/deepseek-chat-v3.1:free
+    name: deepseek/deepseek-r1-distill-llama-70b:free
     task: architecture-planner
     max_tokens: 12500
 #  {
@@ -22,17 +22,17 @@ agents:
 #  }
 #  {request from user + the architect said that "ana are mere"
   builder:
-    name: deepseek/deepseek-chat-v3.1:free
+    name: deepseek/deepseek-r1-distill-llama-70b:free
     task: builder
     max_tokens: 12500
 
   review:
-    name: deepseek/deepseek-chat-v3.1:free
+    name: deepseek/deepseek-r1-0528:free
     task: review_model
     max_tokens: 12500
 
   mock:
-    name: deepseek/deepseek-chat-v3.1:free
+    name: deepseek/deepseek-r1-0528:free
     task: mocking
     max_tokens: 1010
 
