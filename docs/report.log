@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  19 NOV 2025 19:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  19 NOV 2025 22:35
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -353,7 +353,14 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <8> on input line 2.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <6> on input line 2.
-)
+
+
+
+pdfTeX warning (ext4): destination with the same identifier (name{page.}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.40 ... {5.3}Workflow Models}{17}{subsection.5.3}
+                                                  % [1])
 \tf@toc=\write4
 \openout4 = `report.toc'.
 
@@ -364,7 +371,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.}) has be
 <to be read again> 
                    \relax 
 l.64 \newpage
-              [1]
+              [2]
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <14.4> on input line 69.
 LaTeX Font Info:    External font `lmex10' loaded for size
@@ -409,7 +416,7 @@ Underfull \hbox (badness 1112) in paragraph at lines 325--325
 []\T1/lmr/m/n/12 Too strict; re-sulted in ex-ces-sively frag-mented
  []
 
-<assets/chunking_performance.png.png, id=151, 1780.6525pt x 988.69376pt>
+<assets/chunking_performance.png.png, id=210, 1780.6525pt x 988.69376pt>
 File: assets/chunking_performance.png.png Graphic file (type png)
 <use assets/chunking_performance.png.png>
 Package pdftex.def Info: assets/chunking_performance.png.png  used on input line 333.
@@ -424,27 +431,39 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 
 [12]
 
-[13] (./report.aux)
+[13]
+
+[14]
+
+[15]
+
+[16]
+
+[17]
+
+[18]
+
+[19] (./report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: B6913025286F86BF767A3F385E0B77EC;2688.
+(rerunfilecheck)             Checksum: 50843E5FE06F57877C3065C3C27CE741;4659.
  ) 
 Here is how much of TeX's memory you used:
- 10461 strings out of 473190
- 164340 string characters out of 5715800
- 564042 words of memory out of 5000000
- 33543 multiletter control sequences out of 15000+600000
+ 10499 strings out of 473190
+ 164838 string characters out of 5715800
+ 566051 words of memory out of 5000000
+ 33554 multiletter control sequences out of 15000+600000
  615962 words of font info for 69 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,79p,574b,589s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,679b,589s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt12.pfb>
-Output written on report.pdf (15 pages, 251304 bytes).
+Output written on report.pdf (22 pages, 262847 bytes).
 PDF statistics:
- 204 PDF objects out of 1000 (max. 8388607)
- 173 compressed objects within 2 object streams
- 36 named destinations out of 1000 (max. 500000)
- 126 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 305 PDF objects out of 1000 (max. 8388607)
+ 266 compressed objects within 3 object streams
+ 63 named destinations out of 1000 (max. 500000)
+ 214 words of extra memory for PDF output out of 10000 (max. 10000000)
 
