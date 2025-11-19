@@ -6,6 +6,7 @@
 \usepackage{setspace}
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
+\usepackage{fancyhdr}
 
 \setstretch{1.2}
 
@@ -18,7 +19,53 @@
 
 \title{\textbf{Local Multimodel Assistant for Visual Studio Code}}
 \date{}
+
+% -----------------------
+% FIRST PAGE SETUP
+% -----------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Babeș-Bolyai University}
+\fancyfoot[C]{\the\year}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\pagenumbering{gobble}
+
 \begin{document}
+
+% -----------------------
+% FIRST PAGE CONTENT
+% -----------------------
+\begin{titlepage}
+    \centering
+    BABE\c S BOLYAI UNIVERSITY, CLUJ NAPOCA, ROM\^ ANIA
+    FACULTY OF MATHEMATICS AND COMPUTER SCIENCE
+    \vspace*{4cm}
+
+    {\Huge\textbf{Multimodel VS Code Extension}}\\[2cm]
+
+    \vspace{5cm}
+
+    \begin{flushright}
+        {\Large\textbf{Team Members}}\\[1cm]
+        \textbf{Croitoru Andreea-Bianca} \\ Group 232 \\[0.3cm]
+        \textbf{Dobrescu Paul Andrei} \\ Group 232 \\[0.3cm]
+        \textbf{Moghioros Eric} \\ Group 234
+    \end{flushright}
+
+    \vspace*{3cm}
+    2025-2026
+
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+\setstretch{1.5}
+
+\newpage
+\pagenumbering{arabic}
+\pagestyle{plain}
 
 \maketitle
 
