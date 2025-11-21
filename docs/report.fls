@@ -186,6 +186,16 @@ INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/lm/t1lmtt.fd
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/lm/t1lmtt.fd
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/lm/t1lmtt.fd
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/lm/ec-lmtt12.tfm
+INPUT ./assets/workflow-brief.png
+INPUT ./assets/workflow-brief.png
+INPUT ./assets/workflow-brief.png
+INPUT ./assets/workflow-brief.png
+INPUT ./assets/workflow-brief.png
+INPUT ./assets/design-brief.png
+INPUT ./assets/design-brief.png
+INPUT ./assets/design-brief.png
+INPUT ./assets/design-brief.png
+INPUT ./assets/design-brief.png
 INPUT report.aux
 INPUT ./report.out
 INPUT ./report.out
