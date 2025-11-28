@@ -4,7 +4,7 @@
   "description": "An extension for intelligent, multi-model project analysis and chat interactions.",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.80.0" 
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Programming Languages",
@@ -62,17 +62,17 @@
     "test": "node ./out-test/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.105.0", 
     "@types/mocha": "^10.0.6",
     "@types/node": "20.x",
+    "@types/vscode": "^1.106.1",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
-    "eslint": "^8.57.0",                  
-    "typescript": "^5.5.3",                 
-    "ts-loader": "^9.5.1",
-    "webpack": "^5.93.0",
-    "webpack-cli": "^5.1.4",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
     "mocha": "^10.4.0",
-    "@vscode/test-electron": "^2.4.0"
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.3",
+    "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4"
   }
 }

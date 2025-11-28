@@ -442,7 +442,7 @@
         updateSendButtonState();
 
         // Post message to the extension backend
-        vsCodeApi.postMessage({
+        vscode.postMessage({
           command: "sendMessage",
           text: text,
           files: messageData.files,
@@ -458,7 +458,7 @@
        * Refreshes/clears the conversation.
        */
       function handleRefresh() {
-        vsCodeApi.postMessage({ command: "clearChat" });
+        vscode.postMessage({ command: "clearChat" });
       }
 
       /**
