@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from .serializers import RegisterSerializer, LoginSerializer
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
@@ -20,6 +21,7 @@ def register(request):
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
@@ -33,6 +35,7 @@ def login(request):
             'username': user.username
         }, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def logout(request):
