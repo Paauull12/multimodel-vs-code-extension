@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2020", "DOM"],
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "outDir": "dist/webview",
+    "rootDir": "src/webviews"
+  },
+  "include": ["src/webviews/**/*"]
+}

@@ -1,17 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateWebviewContent = generateWebviewContent;
 /**
  * Generates the complete HTML string for the VS Code Webview panel content.
- * 
+ *
  * @param webviewStyleUri The URI pointing to the bundled CSS stylesheet.
  * @param webviewScriptUri The URI pointing to the bundled JavaScript logic file.
  * @param markedJsUri The URI pointing to the local JavaScript Marked file.
  * @returns A string containing the full HTML document structure.
  */
-export function generateWebviewContent(
-  webviewStyleUri: string,
-  webviewScriptUri: string,
-  markedJsUri: string
-): string {
-  return `<!DOCTYPE html>
+function generateWebviewContent(webviewStyleUri, webviewScriptUri, markedJsUri) {
+    return `<!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -62,3 +61,4 @@ export function generateWebviewContent(
   </body>
   </html>`;
 }
+//# sourceMappingURL=chatWebviewGenerator.js.map

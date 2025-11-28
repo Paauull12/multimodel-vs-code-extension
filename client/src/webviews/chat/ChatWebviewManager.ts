@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
 import { generateWebviewContent } from '../chatWebviewGenerator';
 
-/**
- * Provides the webview for the chat interface in the sidebar.
- */
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'analyzer.chatView';
     private _view?: vscode.WebviewView;
@@ -20,29 +17,48 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.options = {
             enableScripts: true,
             localResourceRoots: [
+                vscode.Uri.joinPath(this._extensionUri, 'out'),
                 vscode.Uri.joinPath(this._extensionUri, 'dist'),
+                vscode.Uri.joinPath(this._extensionUri, 'src'),
+                vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews'),
                 vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'static')
             ]
         };
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-        // Handle messages from the webview
-        webviewView.webview.onDidReceiveMessage(
-            message => {
-                switch (message.command) {
-                    case 'webviewReady':
-                        console.log('Webview is ready');
-                        break;
-                    case 'sendMessage':
-                        this._handleUserMessage(message.text);
-                        break;
-                    case 'clearChat':
-                        this._clearChat();
-                        break;
-                }
-            }
-        );
+        webviewView.webview.onDidReceiveMessage(message => {
+        switch (message.command) {
+
+            case 'webviewReady':
+                console.log('Webview is ready');
+                break;
+
+            case 'sendMessage':
+                this._handleUserMessage(message.text);
+                break;
+
+            case 'clearChat':
+                this._clearChat();
+                break;
+
+            case 'securityAudit':
+                this._runSecurityAudit();
+                break;
+
+            case 'reviewPullRequest':
+                this._reviewPullRequest(message.url);
+                break;
+
+            case 'checkRules':
+                this._checkRules(message.code);
+                break;
+
+            default:
+                console.warn("Unknown command from webview:", message);
+        }
+});
+
     }
 
     private _handleUserMessage(text: string) {
@@ -50,7 +66,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             return;
         }
 
-        // Echo the user message back first
         this._view.webview.postMessage({
             command: 'receiveMessage',
             message: {
@@ -60,7 +75,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             }
         });
 
-        // Send a bot response (this is where you'd integrate your AI model)
         setTimeout(() => {
             this._view?.webview.postMessage({
                 command: 'receiveMessage',
@@ -84,25 +98,21 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
-        // Get URIs for resources based on your actual folder structure
-        const styleUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(
-                this._extensionUri, 
-                'src', 
-                'webviews', 
-                'static', 
-                'styles', 
-                'webview.css'
-            )
-        );
+        const stylePaths = [
+            vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'static', 'styles', 'webview.css'),
+            vscode.Uri.joinPath(this._extensionUri, 'out', 'webviews', 'static', 'styles', 'webview.css'),
+            vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview.css')
+        ];
         
-        const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(
-                this._extensionUri, 
-                'dist', 
-                'webview-main.js'
-            )
-        );
+        const styleUri = webview.asWebviewUri(stylePaths[0]);
+        
+        const scriptPaths = [
+            vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview-main.js'),
+            vscode.Uri.joinPath(this._extensionUri, 'out', 'webviews', 'chat', 'client', 'main.js'),
+            vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'chat', 'client', 'main.js')
+        ];
+        
+        const scriptUri = webview.asWebviewUri(scriptPaths[0]);
 
         const markedUri = webview.asWebviewUri(
             vscode.Uri.joinPath(
@@ -115,10 +125,69 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             )
         );
 
-        return generateWebviewContent(
-            styleUri.toString(),
-            scriptUri.toString(),
-            markedUri.toString()
+        // Main script (chat logic)
+        const mainScriptUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(
+                this._extensionUri,
+                "src",
+                "webviews",
+                "chat",
+                "client",
+                "main.js"
+            )
         );
+
+        // Router script (view switching)
+        const routerScriptUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(
+                this._extensionUri,
+                "src",
+                "webviews",
+                "chat",
+                "client",
+                "viewRouter.js"
+            )
+        );
+
+        console.log('CSS URI:', styleUri.toString());
+        console.log('Script URI:', scriptUri.toString());
+        console.log('Marked URI:', markedUri.toString());
+
+        return generateWebviewContent(
+        styleUri.toString(),
+        mainScriptUri.toString(),
+        markedUri.toString()
+    ).replace(
+        "</body>",
+        `  <script src="${routerScriptUri}"></script>\n</body>`
+    );
     }
+
+    private _runSecurityAudit() {
+        vscode.window.showInformationMessage("Running Security Audit...");
+        // TODO: implement logic
+        this._view?.webview.postMessage({
+            command: "securityAuditResult",
+            output: "Security audit results will appear here."
+        });
+    }
+
+    private _reviewPullRequest(url: string) {
+        vscode.window.showInformationMessage("Reviewing PR: " + url);
+        // TODO: implement logic
+        this._view?.webview.postMessage({
+            command: "pullRequestResult",
+            output: `Pull request review for: ${url}`
+        });
+    }
+
+    private _checkRules(code: string) {
+        vscode.window.showInformationMessage("Checking rules...");
+        // TODO: implement logic
+        this._view?.webview.postMessage({
+            command: "rulesCheckResult",
+            output: `Rules check complete for:\n\n${code}`
+        });
+    }
+
 }
