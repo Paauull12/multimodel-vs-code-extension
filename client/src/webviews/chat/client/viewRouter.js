@@ -195,9 +195,219 @@
       }
 
       /**
+       * Creates a file attachment display element for user messages
+       */
+      function createUserFileAttachmentElement(files) {
+        const container = document.createElement("div");
+        container.className = "message-files";
+
+        files.forEach(file => {
+          const fileEl = document.createElement("div");
+          fileEl.className = "message-file-item";
+          
+          const icon = document.createElement("span");
+          icon.className = "message-file-icon";
+          icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <polyline points="13 2 13 9 20 9"/>
+          </svg>`;
+          
+          const name = document.createElement("span");
+          name.className = "message-file-name";
+          name.textContent = file.name;
+          name.title = file.name;
+          
+          const size = document.createElement("span");
+          size.className = "message-file-size";
+          size.textContent = formatFileSize(file.size);
+          
+          fileEl.appendChild(icon);
+          fileEl.appendChild(name);
+          fileEl.appendChild(size);
+          container.appendChild(fileEl);
+        });
+
+        return container;
+      }
+
+      /**
+       * Creates a file attachment display element for bot messages
+       * Shows only file names with click-to-expand functionality
+       */
+      function createBotFileAttachmentElement(files) {
+        const container = document.createElement("div");
+        container.className = "message-files bot-files";
+
+        files.forEach((fileWrapper, index) => {
+          // Handle nested file structure from backend
+          const file = fileWrapper.file || fileWrapper;
+          
+          const fileEl = document.createElement("div");
+          fileEl.className = "message-file-item bot-file";
+          
+          const header = document.createElement("div");
+          header.className = "bot-file-header";
+          header.style.cursor = "pointer";
+          header.title = "Click to view full content";
+          
+          const icon = document.createElement("span");
+          icon.className = "message-file-icon";
+          icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <polyline points="13 2 13 9 20 9"/>
+          </svg>`;
+          
+          const name = document.createElement("span");
+          name.className = "message-file-name";
+          name.textContent = file.path || file.name || 'unnamed file';
+          
+          const expandIcon = document.createElement("span");
+          expandIcon.className = "file-expand-icon";
+          expandIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 3 21 3 21 9"/>
+            <polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>`;
+          
+          header.appendChild(icon);
+          header.appendChild(name);
+          header.appendChild(expandIcon);
+          
+          fileEl.appendChild(header);
+          
+          // Add click handler to show full content if available
+          if (file.content) {
+            header.addEventListener('click', () => {
+              showFileModal(file.path || file.name || 'unnamed file', file.content);
+            });
+          }
+          
+          container.appendChild(fileEl);
+        });
+
+        return container;
+      }
+      /**
+       * Shows a modal with full file content
+       */
+      function showFileModal(fileName, content) {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'file-modal-overlay';
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'file-modal';
+        
+        // Modal header
+        const modalHeader = document.createElement('div');
+        modalHeader.className = 'file-modal-header';
+        
+        const modalTitle = document.createElement('div');
+        modalTitle.className = 'file-modal-title';
+        
+        const fileIcon = document.createElement('span');
+        fileIcon.className = 'file-modal-icon';
+        fileIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+          <polyline points="13 2 13 9 20 9"/>
+        </svg>`;
+        
+        const titleText = document.createElement('span');
+        titleText.textContent = fileName;
+        
+        modalTitle.appendChild(fileIcon);
+        modalTitle.appendChild(titleText);
+        
+        const modalActions = document.createElement('div');
+        modalActions.className = 'file-modal-actions';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'file-modal-btn';
+        copyBtn.title = 'Copy to clipboard';
+        copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>`;
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(content).then(() => {
+            copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>`;
+            setTimeout(() => {
+              copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>`;
+            }, 2000);
+          });
+        };
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'file-modal-btn close-btn';
+        closeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>`;
+        closeBtn.onclick = () => overlay.remove();
+        
+        modalActions.appendChild(copyBtn);
+        modalActions.appendChild(closeBtn);
+        
+        modalHeader.appendChild(modalTitle);
+        modalHeader.appendChild(modalActions);
+        
+        // Modal content
+        const modalContent = document.createElement('div');
+        modalContent.className = 'file-modal-content';
+        
+        const pre = document.createElement('pre');
+        const code = document.createElement('code');
+        code.textContent = content;
+        pre.appendChild(code);
+        modalContent.appendChild(pre);
+        
+        // Assemble modal
+        modal.appendChild(modalHeader);
+        modal.appendChild(modalContent);
+        overlay.appendChild(modal);
+        
+        // Add to document
+        document.body.appendChild(overlay);
+        
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            overlay.remove();
+          }
+        });
+        
+        // Close on Escape key
+        const escapeHandler = (e) => {
+          if (e.key === 'Escape') {
+            overlay.remove();
+            document.removeEventListener('keydown', escapeHandler);
+          }
+        };
+        document.addEventListener('keydown', escapeHandler);
+      }
+
+      /**
+       * Formats file size in human-readable format
+       */
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+      }
+
+      /**
        * Creates a message element with modern styling
        */
-      function createMessageElement(text, sender, timestamp, isCode) {
+      function createMessageElement(text, sender, timestamp, isCode, files) {
         const wrapper = document.createElement("div");
         wrapper.className = `message-wrapper ${sender}`;
 
@@ -229,20 +439,32 @@
         const bubble = document.createElement("div");
         bubble.className = "message-bubble";
 
-        const messageText = document.createElement("div");
-        messageText.className = "message-text";
-
-        // Handle different message types
-        if (isCode) {
-          messageText.innerHTML =
-            "<pre><code>" + sanitizeHtml(text) + "</code></pre>";
-        } else if (sender === "bot" && typeof marked !== "undefined") {
-          messageText.innerHTML = marked.parse(text);
-        } else {
-          messageText.innerHTML = sanitizeHtml(text).replace(/\n/g, "<br>");
+        // Add files if present
+        if (files && files.length > 0) {
+          const filesElement = sender === "user" 
+            ? createUserFileAttachmentElement(files)
+            : createBotFileAttachmentElement(files);
+          bubble.appendChild(filesElement);
         }
 
-        bubble.appendChild(messageText);
+        // Add text content if present
+        if (text) {
+          const messageText = document.createElement("div");
+          messageText.className = "message-text";
+
+          // Handle different message types
+          if (isCode) {
+            messageText.innerHTML =
+              "<pre><code>" + sanitizeHtml(text) + "</code></pre>";
+          } else if (sender === "bot" && typeof marked !== "undefined") {
+            messageText.innerHTML = marked.parse(text);
+          } else {
+            messageText.innerHTML = sanitizeHtml(text).replace(/\n/g, "<br>");
+          }
+
+          bubble.appendChild(messageText);
+        }
+
         content.appendChild(header);
         content.appendChild(bubble);
 
@@ -321,7 +543,8 @@
           message.text,
           message.sender,
           message.timestamp,
-          message.isCode
+          message.isCode,
+          message.files
         );
 
         chatMessagesDisplay.appendChild(messageElement);
@@ -392,23 +615,30 @@
       function handleFileSelect(event) {
         const files = Array.from(event.target.files || []);
 
+        // Read each file's content
         files.forEach((file) => {
-          // Avoid duplicates
-          if (
-            !attachedFiles.some(
-              (f) => f.name === file.name && f.size === file.size
-            )
-          ) {
+          const reader = new FileReader();
+          
+          reader.onload = (e) => {
+            // Store file with its content
             attachedFiles.push({
               name: file.name,
               size: file.size,
               type: file.type,
+              content: e.target.result // Base64 encoded content
             });
-          }
-        });
+            
+            renderAttachedFiles();
+            updateSendButtonState();
+          };
 
-        renderAttachedFiles();
-        updateSendButtonState();
+          reader.onerror = (e) => {
+            console.error('Error reading file:', file.name, e);
+          };
+
+          // Read file as base64
+          reader.readAsDataURL(file);
+        });
 
         // Reset file input
         fileInput.value = "";
@@ -424,15 +654,19 @@
           return;
         }
 
-        // Prepare message data
+        // Prepare message data with files
         const messageData = {
           text: text,
           files: attachedFiles.map((f) => ({
             name: f.name,
             size: f.size,
             type: f.type,
+            content: f.content
           })),
         };
+
+        // Store current files for display
+        const currentFiles = [...attachedFiles];
 
         // Clear input and reset
         userInput.value = "";
@@ -448,12 +682,24 @@
           files: messageData.files,
         });
 
+        // Display the message immediately with files
+        appendMessageToChat({
+          text: text,
+          sender: 'user',
+          timestamp: new Date().toLocaleTimeString(),
+          files: currentFiles
+        });
+
+        // Show typing indicator
+        showTypingIndicator();
+
         // Disable send button briefly
         sendMsgButton.disabled = true;
         setTimeout(() => {
           updateSendButtonState();
         }, 500);
       }
+      
       /**
        * Refreshes/clears the conversation.
        */
@@ -489,9 +735,148 @@
         userInput.style.height = newHeight + "px";
       }
 
+      /**
+       * Displays a file request from the bot
+       */
+      function displayFileRequest(message, files, timestamp) {
+        const welcomeMessage = chatMessagesDisplay.querySelector(".welcome-message");
+        if (welcomeMessage) {
+          welcomeMessage.remove();
+        }
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "message-wrapper bot file-request";
+
+        const avatar = document.createElement("div");
+        avatar.className = "message-avatar";
+        avatar.textContent = "AI";
+
+        const content = document.createElement("div");
+        content.className = "message-content";
+
+        const header = document.createElement("div");
+        header.className = "message-header";
+
+        const senderLabel = document.createElement("span");
+        senderLabel.className = "message-sender";
+        senderLabel.textContent = "Assistant";
+
+        const timeLabel = document.createElement("span");
+        timeLabel.className = "message-time";
+        timeLabel.textContent = timestamp || "";
+
+        header.appendChild(senderLabel);
+        header.appendChild(timeLabel);
+
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble file-request-bubble";
+
+        // Message text
+        const messageText = document.createElement("div");
+        messageText.className = "message-text";
+        messageText.textContent = message;
+
+        // File list
+        const fileList = document.createElement("div");
+        fileList.className = "file-request-list";
+
+        files.forEach(file => {
+          const fileItem = document.createElement("div");
+          fileItem.className = `file-request-item ${file.exists ? 'exists' : 'missing'}`;
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.className = "file-request-checkbox";
+          checkbox.value = file.path;
+          checkbox.checked = file.exists;
+          checkbox.disabled = !file.exists;
+
+          const icon = document.createElement("span");
+          icon.className = "file-request-icon";
+          icon.innerHTML = file.exists 
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                <polyline points="13 2 13 9 20 9"/>
+              </svg>`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>`;
+
+          const fileName = document.createElement("span");
+          fileName.className = "file-request-name";
+          fileName.textContent = file.path;
+
+          const status = document.createElement("span");
+          status.className = "file-request-status";
+          status.textContent = file.exists ? `(${formatFileSize(file.size)})` : '(not found)';
+
+          fileItem.appendChild(checkbox);
+          fileItem.appendChild(icon);
+          fileItem.appendChild(fileName);
+          fileItem.appendChild(status);
+          fileList.appendChild(fileItem);
+        });
+
+        // Action buttons
+        const actions = document.createElement("div");
+        actions.className = "file-request-actions";
+
+        const approveBtn = document.createElement("button");
+        approveBtn.className = "file-request-btn approve-btn";
+        approveBtn.textContent = "Approve & Send";
+        approveBtn.onclick = () => {
+          const checkboxes = fileList.querySelectorAll('.file-request-checkbox:checked');
+          const approvedFiles = Array.from(checkboxes).map(cb => cb.value);
+          
+          if (approvedFiles.length > 0) {
+            vscode.postMessage({
+              command: 'approveFileRequest',
+              files: approvedFiles
+            });
+            wrapper.remove();
+          }
+        };
+
+        const denyBtn = document.createElement("button");
+        denyBtn.className = "file-request-btn deny-btn";
+        denyBtn.textContent = "Deny";
+        denyBtn.onclick = () => {
+          vscode.postMessage({
+            command: 'denyFileRequest'
+          });
+          wrapper.remove();
+        };
+
+        actions.appendChild(approveBtn);
+        actions.appendChild(denyBtn);
+
+        bubble.appendChild(messageText);
+        bubble.appendChild(fileList);
+        bubble.appendChild(actions);
+
+        content.appendChild(header);
+        content.appendChild(bubble);
+
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(content);
+
+        chatMessagesDisplay.appendChild(wrapper);
+
+        setTimeout(() => {
+          chatMessagesDisplay.scrollTo({
+            top: chatMessagesDisplay.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 10);
+      }
+
       // Event listeners
       sendMsgButton.addEventListener("click", handleSendMessage);
-      refreshButton.addEventListener("click", handleRefresh);
+      if (refreshButton) {
+        refreshButton.addEventListener("click", handleRefresh);
+      }
       attachButton.addEventListener("click", () => fileInput.click());
       fileInput.addEventListener("change", handleFileSelect);
 
@@ -513,10 +898,8 @@
 
         switch (message.command) {
           case "receiveMessage":
-            if (message.message.sender === "user") {
-              appendMessageToChat(message.message);
-              showTypingIndicator();
-            } else if (message.message.sender === "bot") {
+            // Only display if it's a bot message (user messages are now displayed immediately)
+            if (message.message.sender === "bot") {
               hideTypingIndicator();
               appendMessageToChat(message.message);
             }
