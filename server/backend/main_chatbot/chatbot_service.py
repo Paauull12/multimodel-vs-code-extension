@@ -152,14 +152,53 @@ class ChatbotService:
             elif target == 'request_files':
                 Message.objects.create(
                     thread=thread,
+                    message_type='agent_internal',
+                    sender_agent=current_agent,
+                    recipient_agent=current_agent,
+                    content=f"[FILES REQUESTED]: {response.get('files_requested', [])}",
+                    metadata={**response, 'awaiting_files': True}
+                )
+                
+                Message.objects.create(
+                    thread=thread,
                     message_type='agent_response',
                     sender_agent=current_agent,
                     content=response.get('response', 'Please provide the requested files.'),
-                    metadata=response
+                    metadata={**response, 'requires_user_action': True}
                 )
-                thread.status = 'running'
+                
+                thread.status = 'awaiting_files'
                 thread.save()
                 break
+
+            elif target == 'request_workspace_tree':
+                from main_chatbot.utils import get_file_structure
+                import os
+
+                workspace_path = os.getcwd()
+                tree = get_file_structure(workspace_path)
+
+                Message.objects.create(
+                    thread=thread,
+                    message_type='agent_internal',
+                    sender_agent=current_agent,
+                    recipient_agent=current_agent,
+                    content=response.get('message', '[REQUESTED WORKSPACE TREE]'),
+                    metadata={**response, 'tree_request': True}
+                )
+                
+                # Then provide the tree as a system response (user role in context)
+                Message.objects.create(
+                    thread=thread,
+                    message_type='user_input',
+                    sender_agent=None,
+                    recipient_agent=current_agent,
+                    content=f"[WORKSPACE TREE]\n{tree}",
+                    metadata={'system_generated': True, 'tree_provided': True}
+                )
+
+                # Continue to next iteration so agent can process the tree
+                continue
 
             else:
                 Message.objects.create(
@@ -206,26 +245,44 @@ class ChatbotService:
 
             elif msg.message_type == 'agent_response':
                 if msg.sender_agent:
+                    if not msg.metadata.get('requires_user_action'):
+                        messages.append({
+                            'role': 'assistant',
+                            'content': msg.content
+                        })
+                        message_count += 1
+
+            elif msg.message_type == 'agent_internal':
+                # Agent's own internal messages
+                if msg.sender_agent == current_agent and msg.recipient_agent == current_agent:
                     messages.append({
                         'role': 'assistant',
                         'content': msg.content
                     })
                     message_count += 1
-
-            elif msg.message_type == 'agent_internal':
-                if msg.recipient_agent == current_agent:
+                # Messages TO this agent from other agents
+                elif msg.recipient_agent == current_agent and msg.sender_agent != current_agent:
                     messages.append({
                         'role': 'user',
                         'content': f"[From {msg.sender_agent.name}]: {msg.content}"
                     })
                     message_count += 1
-                elif msg.sender_agent == current_agent:
+                # Messages FROM this agent to other agents
+                elif msg.sender_agent == current_agent and msg.recipient_agent != current_agent:
                     messages.append({
                         'role': 'assistant',
                         'content': msg.content
                     })
                     message_count += 1
-
+            elif msg.message_type == 'system_response':
+                # System responses (like workspace tree) appear as user messages
+                if msg.recipient_agent == current_agent:
+                    messages.append({
+                        'role': 'user',
+                        'content': msg.content
+                    })
+                    message_count += 1
+                    
             if message_count > 0 and message_count % self.PROMPT_REINJECT_INTERVAL == 0:
                 messages.append({
                     'role': 'system',
@@ -240,15 +297,20 @@ class ChatbotService:
             thread = Thread.objects.get(id=thread_id, user=user)
         except Thread.DoesNotExist:
             return None
+        
+        formatted_content = "[USER PROVIDED FILES]\n\n" + files_content
 
         Message.objects.create(
             thread=thread,
             message_type='user_input',
             user=user,
-            content=files_content,
+            content=formatted_content,
             metadata={'type': 'files'}
         )
 
+        thread.status = 'running'
+        thread.save()
+        
         self._run_agent_loop(thread)
 
         return thread.id
