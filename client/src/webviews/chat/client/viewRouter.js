@@ -2,6 +2,19 @@
   const vscode = acquireVsCodeApi();
   const container = document.getElementById("viewContainer");
 
+  function sanitizeHtml(text) {
+    if (text === undefined || text === null){
+      return "";
+    } 
+    return text
+      .toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   if (!container) {
     return;
   }
@@ -74,25 +87,49 @@
 
   function generateCheckRulesView() {
     return `
-        <div class="check-rules">
+      <div class="check-rules">
 
-            <div class="input-group">
-                <label class="label">Policy File</label>
-                <input type="file" id="policyFile" class="text-input" />
+        <div class="check-rules-card">
+          <h3 class="check-rules-title">Document Compliance Check</h3>
+          <p class="check-rules-subtitle">
+            Upload the requiered files. The analyzer will check how well the code complies.
+          </p>
+
+          <div class="input-group">
+            <label class="label">Rules Document</label>
+            <div class="file-input-row">
+              <button type="button" id="policyFileButton" class="file-button">
+                Choose file…
+              </button>
+              <span id="policyFileName" class="file-name">No file selected</span>
+              <input type="file" id="policyFile" class="file-input-hidden" />
             </div>
+          </div>
 
-            <div class="input-group">
-                <label class="label">File to analize</label>
-                <input type="file" id="codeFile" class="text-input" />
+          <div class="input-group">
+            <label class="label">Code File</label>
+            <div class="file-input-row">
+              <button type="button" id="codeFileButton" class="file-button">
+                Choose file…
+              </button>
+              <span id="codeFileName" class="file-name">No file selected</span>
+              <input type="file" id="codeFile" class="file-input-hidden" />
             </div>
+          </div>
 
-            <div class="actions">
-                <button id="startRulesCheck" class="primary-button">Run Check</button>
-            </div>
+          <div class="actions">
+            <button id="startRulesCheck" class="primary-button">Run Check</button>
+          </div>
+        </div>
 
-            <pre id="rulesOutput" class="output-box"></pre>
-        </div>`;
+        <div id="rulesOutput" class="rules-output">
+          <div class="rules-placeholder">
+            Upload files and click <strong>Run Check</strong> to see the compliance report.
+          </div>
+        </div>
+      </div>`;
   }
+
 
   function render(mode) {
     switch (mode) {
@@ -121,34 +158,7 @@
     }
 
     if (mode === "check-rules") {
-      document.getElementById("startRulesCheck")?.addEventListener("click", async () => {
-          const policyFileInput = document.getElementById("policyFile");
-          const codeFileInput = document.getElementById("codeFile");
-
-          const policyFile = policyFileInput?.files?.[0];
-          const codeFile = codeFileInput?.files?.[0];
-
-          if (!policyFile || !codeFile) {
-              vscode.postMessage({ command: "rulesCheckResult", output: "Please upload both files!" });
-              return;
-          }
-
-          // Read file contents into base64
-          const policyBase64 = await fileToBase64(policyFile);
-          const codeBase64 = await fileToBase64(codeFile);
-
-          vscode.postMessage({
-              command: "checkRules",
-              policy: {
-                  name: policyFile.name,
-                  content: policyBase64
-              },
-              code: {
-                  name: codeFile.name,
-                  content: codeBase64
-              }
-          });
-        });
+      setUpChcekRulesHandlers();
     }
 
     if (mode === "security") {
@@ -187,6 +197,64 @@
           reader.onerror = reject;
           reader.readAsDataURL(file);
       });
+    }
+
+    function setUpChcekRulesHandlers(){
+      const policyFileInput = document.getElementById("policyFile");
+      const codeFileInput = document.getElementById("codeFile");
+      const policyFileButton = document.getElementById("policyFileButton");
+      const codeFileButton = document.getElementById("codeFileButton");
+      const policyFileName = document.getElementById("policyFileName");
+      const codeFileName = document.getElementById("codeFileName");
+
+      policyFileButton?.addEventListener("click", () => policyFileInput?.click());
+      codeFileButton?.addEventListener("click", () => codeFileInput?.click());
+
+      policyFileInput?.addEventListener("change", () => {
+        const file = policyFileInput.files?.[0];
+        policyFileName.textContent = file ? file.name : "No file selected";
+      });
+
+      codeFileInput?.addEventListener("change", () => {
+        const file = codeFileInput.files?.[0];
+        codeFileName.textContent = file ? file.name : "No file selected";
+      });
+
+      document
+        .getElementById("startRulesCheck")?.addEventListener("click", async () => {
+          const policyFile = policyFileInput?.files?.[0];
+          const codeFile = codeFileInput?.files?.[0];
+
+          if (!policyFile || !codeFile) {
+              renderRulesResult({
+                compliant: false,
+                summary: "Please upload both a policy/design document and a code file.",
+                violations: [],
+                missing_implementations: []
+              });
+              return;
+          }
+
+          renderRulesLoading();
+
+          // Read file contents into base64
+          const [policyBase64, codeBase64] = await Promise.all([
+            fileToBase64(policyFile),
+            fileToBase64(codeFile)
+          ]);
+
+          vscode.postMessage({
+              command: "checkRules",
+              policy: {
+                  name: policyFile.name,
+                  content: policyBase64
+              },
+              code: {
+                  name: codeFile.name,
+                  content: codeBase64
+              }
+          });
+        });
     }
 
     function setupChatHandlers() {
@@ -562,6 +630,190 @@
     }
   }
 
+
+  function renderIssueSection(title, items, keyField) {
+    if (!items || !items.length) {
+      return `
+        <div class="rules-section">
+          <h3>${title}</h3>
+          <p class="empty">None</p>
+        </div>
+      `;
+    }
+
+    const cards = items
+      .map((item, idx) => {
+        const mainTitle = item[keyField] || `${title} #${idx + 1}`;
+        return `
+          <details class="issue-card" ${idx === 0 ? "open" : ""}>
+            <summary>
+              <span class="issue-title">${sanitizeHtml(mainTitle)}</span>
+              <span class="issue-pill">#${idx + 1}</span>
+            </summary>
+            <div class="issue-body">
+              ${item.description ? `
+                <div class="issue-block">
+                  <h4>Description</h4>
+                  <p>${sanitizeHtml(item.description)}</p>
+                </div>` : ""
+              }
+              ${item.reason ? `
+                <div class="issue-block">
+                  <h4>Reason</h4>
+                  <p>${sanitizeHtml(item.reason)}</p>
+                </div>` : ""
+              }
+              ${item.code_section ? `
+                <div class="issue-block">
+                  <h4>Code section</h4>
+                  <pre><code>${sanitizeHtml(item.code_section)}</code></pre>
+                </div>` : ""
+              }
+              ${item.fix ? `
+                <div class="issue-block fix">
+                  <h4>Fix</h4>
+                  <p>${sanitizeHtml(item.fix)}</p>
+                </div>` : ""
+              }
+            </div>
+          </details>
+        `;
+      })
+      .join("");
+
+    return `
+      <div class="rules-section">
+        <h3>${title}</h3>
+        ${cards}
+      </div>
+    `;
+  }
+
+  function renderRulesLoading() {
+    const container = document.getElementById("rulesOutput");
+    if (!container){
+      return;
+    } 
+    container.innerHTML = `
+      <div class="rules-loading">
+        <div class="spinner"></div>
+        <div>Analyzing compliance…</div>
+      </div>
+    `;
+  }
+
+  function renderRulesResult(result) {
+      const container = document.getElementById("rulesOutput");
+      if (!container){
+        return;
+      } 
+
+      if (!result) {
+        container.innerHTML = 
+        `<div class="rules-error">
+          ⚠️ No result received from backend. <br>
+          Please try again.
+        </div>`;
+        return;
+      }
+
+      if (typeof result === "string") {
+        container.innerHTML = `
+          <div class="rules-error">
+            ⚠️ Something went wrong.<br>
+            Please try again.<br>
+            <span class="rules-error-detail">${sanitizeHtml(result)}</span>
+          </div>
+        `;
+        return;
+      }
+
+      if (
+        !result ||
+        typeof result !== "object" ||
+        !("compliant" in result) ||
+        !("violations" in result) ||
+        !("missing_implementations" in result)
+      ) {
+        container.innerHTML = `
+          <div class="rules-error">
+            ⚠️ Invalid response received.<br>
+            Please try again.
+          </div>
+        `;
+        return;
+      }
+
+      if (!result.summary || typeof result.summary !== "string") {
+        container.innerHTML = `
+          <div class="rules-error">
+            ⚠️ The analysis completed, but no summary was generated.<br>
+            Please try again.
+          </div>
+        `;
+        return;
+      }
+
+      if(result.summary === "Please upload both a policy/design document and a code file."){
+        container.innerHTML = `
+          <div class="rules-error">
+            ${result.summary}
+          </div>
+        `;
+        return;
+      }
+      const compliant = !!result.compliant;
+      const violations = result.violations || [];
+      const missing = result.missing_implementations || [];
+      const summary = result.summary || "No summary provided.";
+
+      const totalIssues = violations.length + missing.length;
+      let score = compliant ? 100 : Math.max(0, 100 - totalIssues * 15);
+      if (score < 0){
+        score = 0;
+      }
+      if (score > 100) { 
+        score = 100;
+      }
+
+      let parsedSummary = summary;
+      // try {
+      //     parsedSummary = marked?.parse(summary) || sanitize(summary);
+      // } catch {
+      //     parsedSummary = sanitize(summary);
+      // }
+
+      container.innerHTML = `
+        <div class="rules-header ${compliant ? "ok" : "fail"}">
+          <div class="rules-header-main">
+            <span class="badge ${compliant ? "badge-success" : "badge-danger"}">
+              ${compliant ? "Compliant ✅" : "Non-compliant ❌"}
+            </span>
+            <span class="issues-count">
+              ${totalIssues === 0 ? "No issues detected" : `${totalIssues} issue(s) detected`}
+            </span>
+          </div>
+
+          <div class="score">
+            <div class="score-label">
+              Compliance score: <strong>${score}%</strong>
+            </div>
+            <div class="score-bar">
+              <div class="score-bar-fill" style="width: ${score}%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rules-summary markdown-body">
+          ${parsedSummary}
+        </div>
+
+        <div class="rules-sections">
+          ${renderIssueSection("Violations", violations, "rule")}
+          ${renderIssueSection("Missing implementations", missing, "requirement")}
+        </div>
+      `;
+    }
   // Default view
   render("chat");
 
@@ -593,34 +845,27 @@
     vscode.postMessage({ command: "reviewPullRequest", url });
   });
 
-  window.addEventListener("message", (event) => {
-    const { command, output } = event.data;
-    if (command === "pullRequestResult") {
-      document.getElementById("prOutput").textContent = output;
-    }
-  });
-
   document
     .getElementById("startSecurityAudit")
     ?.addEventListener("click", () => {
       vscode.postMessage({ command: "securityAudit" });
     });
 
-  window.addEventListener("message", (event) => {
-    const { command, output } = event.data;
-    if (command === "securityAuditResult") {
-      document.getElementById("securityOutput").textContent = output;
-    }
-  });
 
   window.addEventListener("message", (event) => {
-      const { command, output } = event.data;
+      console.log("MESSAGE RECEIVED IN WEBVIEW:", event.data);
+      const { command, result } = event.data;
 
       if (command === "rulesCheckResult") {
-          const out = document.getElementById("rulesOutput");
-          if (out) {
-              out.textContent = output;
-          }
+        renderRulesResult(result);
+      }
+
+      if (command === "securityAuditResult") {
+        document.getElementById("securityOutput").textContent = result;
+      }
+
+      if (command === "pullRequestResult") {
+        document.getElementById("prOutput").textContent = result;
       }
   });
 

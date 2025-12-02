@@ -70,6 +70,9 @@ def check_compliance(request):
         
         print("DEBUG RAW RESULT:", result_json)
 
+        if isinstance(result_json, (dict, list)):
+            return JsonResponse(result_json, safe=False)
+        
         clean = (result_json or "").strip()
 
         # If model returned nothing
@@ -81,14 +84,16 @@ def check_compliance(request):
 
         # Remove markdown fences
         if clean.startswith("```"):
-            clean = clean.split("```")[1]   # remove first fence
+            clean = clean.split("```")[1]
             clean = clean.replace("json", "", 1).strip()
 
         # Try parsing JSON
         try:
             parsed = json.loads(clean)
         except Exception as e:
-            print("DEBUG BAD JSON:", clean)
+            print("DEBUG RAW (unparsed) JSON:", repr(result_json))
+            print("DEBUG CLEANED JSON:", clean)
+            print("JSON PARSE ERROR:", e)
             return JsonResponse({
                 "error": "Model returned invalid JSON.",
                 "raw_output": clean,

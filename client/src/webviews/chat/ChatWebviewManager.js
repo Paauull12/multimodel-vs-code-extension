@@ -145,7 +145,7 @@ class ChatViewProvider {
         // TODO: implement logic
         this._view?.webview.postMessage({
             command: "securityAuditResult",
-            output: "Security audit results will appear here."
+            result: "Security audit results will appear here."
         });
     }
     _reviewPullRequest(url) {
@@ -153,7 +153,7 @@ class ChatViewProvider {
         // TODO: implement logic
         this._view?.webview.postMessage({
             command: "pullRequestResult",
-            output: `Pull request review for: ${url}`
+            result: `Pull request review for: ${url}`
         });
     }
     async _checkRules(message) {
@@ -169,17 +169,17 @@ class ChatViewProvider {
             const response = await axios_1.default.post("http://127.0.0.1:8000/file/check-compliance/", form, {
                 headers: form.getHeaders()
             });
-            const result = await response.data;
-            const summary = result.summary ?? "No summary available.";
+            const resultData = await response.data;
+            // const summary = result.summary ?? "No summary available.";
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                output: summary
+                result: resultData
             });
         }
         catch (err) {
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                output: "Error: " + err.message
+                result: "Error: " + err.message
             });
         }
     }

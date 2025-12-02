@@ -170,7 +170,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         // TODO: implement logic
         this._view?.webview.postMessage({
             command: "securityAuditResult",
-            output: "Security audit results will appear here."
+            result: "Security audit results will appear here."
         });
     }
 
@@ -179,7 +179,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         // TODO: implement logic
         this._view?.webview.postMessage({
             command: "pullRequestResult",
-            output: `Pull request review for: ${url}`
+            result: `Pull request review for: ${url}`
         });
     }
 
@@ -205,22 +205,19 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 }
             );
 
-            const result = await response.data;
-            const summary = result.summary ?? "No summary available.";
+            const resultData = await response.data;
+            // const summary = result.summary ?? "No summary available.";
 
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                output: summary
+                result: resultData
             });
 
         } catch (err: any) {
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                output: "Error: " + err.message
+                result: "Error: " + err.message
             });
         }
     }
-
-
-
 }
