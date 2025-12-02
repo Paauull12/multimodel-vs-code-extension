@@ -22,5 +22,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('auth_service.urls')),
-    path('mock/', include("main_chatbot.urls"))
+    path('mock/', include("main_chatbot.urls")),
+    path('file/', include("check_rules.urls"))
 ]

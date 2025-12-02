@@ -121,14 +121,33 @@
     }
 
     if (mode === "check-rules") {
-      document
-        .getElementById("startRulesCheck")
-        ?.addEventListener("click", () => {
-          const code =
-            /** @type {HTMLTextAreaElement} */ (
-              document.getElementById("codeInput")
-            )?.value || "";
-          vscode.postMessage({ command: "checkRules", code });
+      document.getElementById("startRulesCheck")?.addEventListener("click", async () => {
+          const policyFileInput = document.getElementById("policyFile");
+          const codeFileInput = document.getElementById("codeFile");
+
+          const policyFile = policyFileInput?.files?.[0];
+          const codeFile = codeFileInput?.files?.[0];
+
+          if (!policyFile || !codeFile) {
+              vscode.postMessage({ command: "rulesCheckResult", output: "Please upload both files!" });
+              return;
+          }
+
+          // Read file contents into base64
+          const policyBase64 = await fileToBase64(policyFile);
+          const codeBase64 = await fileToBase64(codeFile);
+
+          vscode.postMessage({
+              command: "checkRules",
+              policy: {
+                  name: policyFile.name,
+                  content: policyBase64
+              },
+              code: {
+                  name: codeFile.name,
+                  content: codeBase64
+              }
+          });
         });
     }
 
@@ -158,6 +177,15 @@
             out.textContent = output;
           }
         }
+      });
+    }
+
+    async function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
       });
     }
 
@@ -584,4 +612,16 @@
       document.getElementById("securityOutput").textContent = output;
     }
   });
+
+  window.addEventListener("message", (event) => {
+      const { command, output } = event.data;
+
+      if (command === "rulesCheckResult") {
+          const out = document.getElementById("rulesOutput");
+          if (out) {
+              out.textContent = output;
+          }
+      }
+  });
+
 })();

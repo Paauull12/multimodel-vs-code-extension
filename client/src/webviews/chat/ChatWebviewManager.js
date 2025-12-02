@@ -32,10 +32,15 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatViewProvider = void 0;
 const vscode = __importStar(require("vscode"));
+const form_data_1 = __importDefault(require("form-data"));
 const chatWebviewGenerator_1 = require("../chatWebviewGenerator");
+const axios_1 = __importDefault(require("axios"));
 class ChatViewProvider {
     _extensionUri;
     static viewType = 'analyzer.chatView';
@@ -74,7 +79,7 @@ class ChatViewProvider {
                     this._reviewPullRequest(message.url);
                     break;
                 case 'checkRules':
-                    this._checkRules(message.code);
+                    this._checkRules(message);
                     break;
                 default:
                     console.warn("Unknown command from webview:", message);
@@ -151,13 +156,32 @@ class ChatViewProvider {
             output: `Pull request review for: ${url}`
         });
     }
-    _checkRules(code) {
-        vscode.window.showInformationMessage("Checking rules...");
-        // TODO: implement logic
-        this._view?.webview.postMessage({
-            command: "rulesCheckResult",
-            output: `Rules check complete for:\n\n${code}`
-        });
+    async _checkRules(message) {
+        vscode.window.showInformationMessage("Running Rule Check...");
+        const policyFile = message.policy;
+        const codeFile = message.code;
+        try {
+            const policyBuffer = Buffer.from(policyFile.content, "base64");
+            const codeBuffer = Buffer.from(codeFile.content, "base64");
+            const form = new form_data_1.default();
+            form.append("policy_file", policyBuffer, policyFile.name);
+            form.append("code_file", codeBuffer, codeFile.name);
+            const response = await axios_1.default.post("http://127.0.0.1:8000/file/check-compliance/", form, {
+                headers: form.getHeaders()
+            });
+            const result = await response.data;
+            const summary = result.summary ?? "No summary available.";
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult",
+                output: summary
+            });
+        }
+        catch (err) {
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult",
+                output: "Error: " + err.message
+            });
+        }
     }
 }
 exports.ChatViewProvider = ChatViewProvider;
