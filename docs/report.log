@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  20 NOV 2025 12:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  3 DEC 2025 23:48
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -359,7 +359,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.40 ... {5.3}Workflow Models}{17}{subsection.5.3}
+l.41 ....3}Builder Agent}{17}{subsubsection.5.1.3}
                                                   % [1])
 \tf@toc=\write4
 \openout4 = `report.toc'.
@@ -410,52 +410,42 @@ Overfull \hbox (6.44957pt too wide) in paragraph at lines 194--194
 [8]
 
 [9]
-
-[10{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
-Underfull \hbox (badness 1112) in paragraph at lines 325--325
-[]\T1/lmr/m/n/12 Too strict; re-sulted in ex-ces-sively frag-mented
- []
-
-<assets/chunking_performance.png.png, id=215, 1780.6525pt x 988.69376pt>
-File: assets/chunking_performance.png.png Graphic file (type png)
-<use assets/chunking_performance.png.png>
-Package pdftex.def Info: assets/chunking_performance.png.png  used on input line 333.
-(pdftex.def)             Requested size: 362.37569pt x 201.20508pt.
-
-
-[11 <./assets/chunking_performance.png.png>]
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 371.
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 288.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 
-[12]
+[10]
 
-[13]
+[11]
+
+[12{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
+Underfull \hbox (badness 1112) in paragraph at lines 362--362
+[]\T1/lmr/m/n/12 Too strict; re-sulted in ex-ces-sively frag-mented
+ []
+
+<assets/chunking_performance.png.png, id=249, 1780.6525pt x 988.69376pt>
+File: assets/chunking_performance.png.png Graphic file (type png)
+<use assets/chunking_performance.png.png>
+Package pdftex.def Info: assets/chunking_performance.png.png  used on input line 370.
+(pdftex.def)             Requested size: 362.37569pt x 201.20508pt.
+
+
+[13 <./assets/chunking_performance.png.png>]
 
 [14]
 
 [15]
 
 [16]
-<assets/workflow-brief.png, id=246, 2285.53876pt x 1557.82pt>
-File: assets/workflow-brief.png Graphic file (type png)
-<use assets/workflow-brief.png>
-Package pdftex.def Info: assets/workflow-brief.png  used on input line 502.
-(pdftex.def)             Requested size: 362.37569pt x 246.97433pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
 
 [17]
 
-[18 <./assets/workflow-brief.png>]
-<assets/design-brief.png, id=265, 2285.53876pt x 1557.82pt>
-File: assets/design-brief.png Graphic file (type png)
-<use assets/design-brief.png>
-Package pdftex.def Info: assets/design-brief.png  used on input line 554.
+[18]
+<assets/workflow-brief.png, id=280, 2285.53876pt x 1557.82pt>
+File: assets/workflow-brief.png Graphic file (type png)
+<use assets/workflow-brief.png>
+Package pdftex.def Info: assets/workflow-brief.png  used on input line 539.
 (pdftex.def)             Requested size: 362.37569pt x 246.97433pt.
 
 
@@ -465,27 +455,48 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [19]
 
-[20 <./assets/design-brief.png>] (./report.aux)
+[20 <./assets/workflow-brief.png>]
+<assets/design-brief.png, id=299, 2285.53876pt x 1557.82pt>
+File: assets/design-brief.png Graphic file (type png)
+<use assets/design-brief.png>
+Package pdftex.def Info: assets/design-brief.png  used on input line 591.
+(pdftex.def)             Requested size: 362.37569pt x 246.97433pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+
+[21]
+Underfull \hbox (badness 10000) in paragraph at lines 611--615
+
+ []
+
+
+
+[22 <./assets/design-brief.png>]
+
+[23] (./report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 70D78A7EF3D39ADEAD8FB0B3B755A84A;4758.
+(rerunfilecheck)             Checksum: 2B78BA4D575B7949D807C466815BC971;5931.
  ) 
 Here is how much of TeX's memory you used:
- 10520 strings out of 473190
- 165339 string characters out of 5715800
- 566137 words of memory out of 5000000
- 33571 multiletter control sequences out of 15000+600000
- 615962 words of font info for 69 fonts, out of 8000000 for 9000
+ 10536 strings out of 473190
+ 165572 string characters out of 5715800
+ 566143 words of memory out of 5000000
+ 33578 multiletter control sequences out of 15000+600000
+ 616338 words of font info for 70 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,679b,589s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,679b,588s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt12.pfb>
-Output written on report.pdf (23 pages, 436620 bytes).
+Output written on report.pdf (26 pages, 446024 bytes).
 PDF statistics:
- 322 PDF objects out of 1000 (max. 8388607)
- 278 compressed objects within 3 object streams
- 67 named destinations out of 1000 (max. 500000)
- 232 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 366 PDF objects out of 1000 (max. 8388607)
+ 317 compressed objects within 4 object streams
+ 75 named destinations out of 1000 (max. 500000)
+ 272 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -585,7 +585,7 @@ The system is designed to be deterministic and reproducible. Core behavioral rul
 
 The multi-agent architecture provides a modular, reliable, and robust pipeline for generating high-quality software. Each agent specializes in a well-defined aspect of the software engineering lifecycle, and through strict communication protocols, the system ensures architectural correctness, production-quality code, and human-readable output. The specialization and cooperation of all four agents allow the system to scale to complex tasks while maintaining clarity, determinism, and correctness.
 
-\section{Application}
+\section{Implementation Details}
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.8\textwidth]{assets/design-brief.png}
@@ -593,4 +593,45 @@ The multi-agent architecture provides a modular, reliable, and robust pipeline f
     \label{fig:design}
 \end{figure}
 
+This section presents the concrete implementation work carried out during the development of the 
+Visual Studio Code extension.
+
+\subsection{Communication Model}
+
+The communication between the frontend and the backend is implemented using a message–based protocol based on the Visual Studio Code \texttt{vscode.postMessage} API and a persistent backend service built in Node.js. The architecture follows a bidirectional message flow:
+
+\begin{itemize}
+    \item \textbf{Frontend → Backend:} User messages, file queries, command triggers, and agent delegation requests.
+    \item \textbf{Backend → Frontend:} Agent responses, updated generation states, progress indicators, final code outputs, and error events.
+\end{itemize}
+
+This design ensures a non-blocking, event-driven pipeline suitable for long-running tasks such as code generation, multi-step reasoning, or incremental file retrieval.
+
+\subsection{File Retrieval System}
+One of the key technical contributions is the implementation of a robust file-retrieval mechanism 
+enabling the Main Agent to request the project’s workspace tree only when needed. This provides the 
+AI system with contextual knowledge while preserving memory efficiency and token budget constraints. 
+\newline
+
+Before the introduction of the \texttt{getFile} system, the Main Agent was unaware of the project’s 
+directory structure unless the entire tree was preloaded. This posed several problems:
+
+\begin{itemize}
+    \item unnecessary token consumption for large projects,
+    \item unnecessary delays caused by loading unused directories,
+    \item inability of the Main Agent to dynamically request missing context,
+    \item higher risk of hallucinations when referencing files not yet retrieved.
+\end{itemize}
+
+The new approach introduces a demand-driven information flow where file context is requested only 
+when explicitly required by the agent pipeline. The file tree is returned using the previously 
+described \textbf{TOON (Token-Oriented Object Notation)} format. The integration of TOON into the 
+file retrieval mechanism results in several benefits:
+
+\begin{itemize}
+    \item \textbf{Reduced token overhead} compared to JSON-based structures.
+    \item \textbf{Improved LLM interpretability} due to indentation hierarchy.
+    \item \textbf{Adaptive delimiter usage} for filenames containing special characters.
+    \item \textbf{Explicit element counts} improving structural robustness.
+\end{itemize}
 \end{document}
