@@ -276,6 +276,43 @@ Embeddings vary according to surrounding context, enabling deeper semantic under
 Examples: Sentence-BERT, E5, OpenAI embeddings.\\
 Generate embeddings for entire sentences or paragraphs, making them highly suitable for retrieval tasks involving long-form documents.
 
+\subsection{Token Efficiency and Data Representation}
+
+Efficient management of context windows and token consumption is a critical constraint in Large Language Model (LLM) applications. This system incorporates specific strategies to monitor usage and optimize data serialization.
+
+\subsubsection{Token Counting Mechanism}
+
+To maintain operational visibility and manage costs associated with LLM inference, the system implements a granular token tracking mechanism.
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Data Persistence:} The schema for the \texttt{Message} model has been extended to include a \texttt{tokens\_used} field. This allows for the storage of precise consumption metrics for every interaction within a conversation thread.
+    \item \textbf{Usage Extraction:} The \texttt{ModelManager} service parses the standardized \texttt{usage} payload returned by the inference API (e.g., OpenRouter or OpenAI). It extracts the \texttt{total\_tokens} count immediately after generation and persists it alongside the message content.
+    \item \textbf{Analytics Utility:} This granular data enables the calculation of per-user or per-organization quotas, facilitating cost auditing and preventing resource exhaustion.
+\end{itemize}
+
+\subsubsection{TOON Formatting (Token-Oriented Object Notation)}
+
+Standard data serialization formats like JSON are highly verbose, utilizing a significant number of tokens for structural syntax (braces, quotes, and commas) rather than semantic content. To optimize the representation of file structures and directory trees within the prompt context, the system adopts \textbf{TOON (Token-Oriented Object Notation)}.
+
+\paragraph{Concept and Advantages}
+TOON is a human-readable serialization format designed specifically for LLM efficiency. It combines the indentation-based hierarchy of YAML with the compact, tabular characteristics of CSV for array data.
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Token Reduction:} By removing repeated keys, closing braces, and excessive quoting, TOON reduces token overhead by approximately 30-50\% compared to equivalent JSON structures.
+    \item \textbf{Structural Clarity:} The indentation-based format makes nested directory structures easier for LLMs to parse and visualize, reducing "lost in the middle" hallucinations during complex file retrieval tasks.
+\end{itemize}
+
+\paragraph{Implementation}
+The system utilizes a specialized utility function, \texttt{get\_file\_structure}, to generate TOON-compliant representations of the project's file system:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Hierarchy:} Directories are represented as nested keys (e.g., \texttt{backend/}) using 2-space indentation.
+    \item \textbf{Compact Arrays:} Files within a directory are aggregated into a single line using the \texttt{files[N]} syntax (e.g., \texttt{files[3]: model.py,view.py,urls.py}), which explicitly states the element count to aid the model's counting mechanisms.
+    \item \textbf{Smart Delimiters:} The implementation automatically detects characters within filenames (such as commas) and switches delimiters (e.g., to pipes \texttt{|}) to ensure parsing integrity without requiring escape characters.
+\end{itemize}
+
+This approach ensures that the model maintains a complete understanding of the project structure while maximizing the available context window for reasoning and code generation tasks.
+
 \subsubsection{Our Approach}
 
 \paragraph{Architecture Overview} 
