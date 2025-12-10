@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
+import FormData from "form-data";
 import { generateWebviewContent } from '../chatWebviewGenerator';
+import axios from 'axios';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'analyzer.chatView';
@@ -51,7 +53,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 break;
 
             case 'checkRules':
-                this._checkRules(message.code);
+                this._checkRules(message);
                 break;
 
             default:
@@ -168,7 +170,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         // TODO: implement logic
         this._view?.webview.postMessage({
             command: "securityAuditResult",
-            output: "Security audit results will appear here."
+            result: "Security audit results will appear here."
         });
     }
 
@@ -177,17 +179,45 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         // TODO: implement logic
         this._view?.webview.postMessage({
             command: "pullRequestResult",
-            output: `Pull request review for: ${url}`
+            result: `Pull request review for: ${url}`
         });
     }
 
-    private _checkRules(code: string) {
-        vscode.window.showInformationMessage("Checking rules...");
-        // TODO: implement logic
-        this._view?.webview.postMessage({
-            command: "rulesCheckResult",
-            output: `Rules check complete for:\n\n${code}`
-        });
-    }
+    private async _checkRules(message: any) {
+        vscode.window.showInformationMessage("Running Rule Check...");
 
+        const policyFile = message.policy;
+        const codeFile = message.code;
+
+        try {
+            const policyBuffer = Buffer.from(policyFile.content, "base64");
+            const codeBuffer = Buffer.from(codeFile.content, "base64");
+
+            const form = new FormData();
+            form.append("policy_file", policyBuffer, policyFile.name);
+            form.append("code_file", codeBuffer, codeFile.name);
+
+            const response = await axios.post(
+                "http://127.0.0.1:8000/file/check-compliance/",
+                form,
+                {
+                    headers: form.getHeaders()
+                }
+            );
+
+            const resultData = await response.data;
+            // const summary = result.summary ?? "No summary available.";
+
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult",
+                result: resultData
+            });
+
+        } catch (err: any) {
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult",
+                result: "Error: " + err.message
+            });
+        }
+    }
 }

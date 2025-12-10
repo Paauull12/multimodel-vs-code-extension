@@ -101,6 +101,7 @@ body {
 
 /* Label & input */
 .input-group {
+    margin-top: 12px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -750,6 +751,7 @@ body {
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  width: 100%;
 }
 
 .primary-button:hover {
@@ -839,8 +841,9 @@ body {
 /* Button section */
 .actions {
     display: flex;
-    justify-content: flex-start;
-    margin-top: 6px;
+    justify-content: center;
+    margin-top: 12px;
+    width: 100%;
 }
 
 /* Output */
@@ -855,4 +858,239 @@ body {
     font-size: 12px;
     font-weight: 600;
     color: var(--vscode-descriptionForeground);
+}
+
+.check-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.check-rules-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.check-rules-title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+}
+
+.check-rules-subtitle {
+  margin: 0;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.85rem;
+}
+
+.file-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-button {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-button-border, transparent);
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.file-button:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.file-name {
+  font-size: 0.8rem;
+  color: var(--vscode-descriptionForeground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.rules-output {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  background: var(--vscode-editor-background);
+  max-height: 55vh;
+  overflow: auto;
+}
+
+.rules-placeholder {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.85rem;
+}
+
+.rules-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.rules-header-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: rgba(0, 200, 0, 0.12);
+  color: #7cd67c;
+}
+
+.badge-danger {
+  background: rgba(200, 0, 0, 0.12);
+  color: #ff8a8a;
+}
+
+.issues-count {
+  font-size: 0.8rem;
+  color: var(--vscode-descriptionForeground);
+}
+
+.score {
+  font-size: 0.8rem;
+}
+
+.score-label {
+  margin-bottom: 4px;
+}
+
+.score-bar {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff6464, #ffd86a, #7cd67c);
+}
+
+.rules-summary {
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+  font-size: 0.85rem;
+}
+
+/* collapsible cards */
+
+.rules-section {
+  margin-bottom: 10px;
+}
+
+.rules-section h3 {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+}
+
+.rules-section .empty {
+  font-size: 0.8rem;
+  color: var(--vscode-descriptionForeground);
+}
+
+.issue-card {
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.01);
+}
+
+.issue-card > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.issue-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.issue-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.issue-pill {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.issue-body {
+  padding: 6px 8px 8px;
+  font-size: 0.8rem;
+}
+
+.issue-block {
+  margin-bottom: 6px;
+}
+
+.issue-block h4 {
+  margin: 0 0 2px;
+  font-size: 0.8rem;
+}
+
+.issue-block pre {
+  margin: 0;
+  padding: 6px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.4);
+  font-size: 0.7rem;
+  overflow-x: auto;
+}
+
+.issue-block.fix {
+  border-left: 2px solid #7cd67c;
+  padding-left: 6px;
+}
+
+/* loading */
+
+.rules-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: rgba(255,255,255,0.9);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
