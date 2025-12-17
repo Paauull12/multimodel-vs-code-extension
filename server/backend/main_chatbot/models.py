@@ -1,11 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
 import uuid
 
 
 class Agent(models.Model):
-
     TASK_CHOICES = [
         ('orchestration_model', 'Orchestration Model'),
         ('architecture-planner', 'Architecture Planner'),
@@ -27,8 +25,8 @@ class Agent(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-class Thread(models.Model):
 
+class Thread(models.Model):
     STATUS_CHOICES = [
         ('running', 'Running'),
         ('completed', 'Completed'),
@@ -69,9 +67,9 @@ class Message(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    # tokens
-    #lines of code
 
+    # Track token usage for this message
+    tokens_used = models.IntegerField(default=0, help_text="Number of tokens used for this generation")
 
     thread = models.ForeignKey(
         Thread,

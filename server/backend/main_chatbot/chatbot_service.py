@@ -43,7 +43,8 @@ class ChatbotService:
             message_type='user_input',
             user=user,
             recipient_agent=main_agent,
-            content=user_message
+            content=user_message,
+            tokens_used=0  # User input doesn't consume generation tokens directly in this model
         )
 
         self._run_agent_loop(thread)
@@ -62,7 +63,8 @@ class ChatbotService:
             messages = self._build_agent_messages(thread, current_agent)
 
             try:
-                response = self.model_manager.call_agent_sync(
+                # Unpack response and token count
+                response, tokens_used = self.model_manager.call_agent_sync(
                     agent_name=current_agent.name,
                     messages=messages,
                     response_type='json',
@@ -79,6 +81,11 @@ class ChatbotService:
                     metadata={'error': True, 'error_message': str(e)}
                 )
                 return
+
+            # Ensure response is a dictionary (it should be if response_type='json' succeeded)
+            if not isinstance(response, dict):
+                # Fallback if parsing failed but content returned
+                response = {'target': 'unknown', 'response': str(response)}
 
             target = response.get('target')
 
@@ -101,6 +108,7 @@ class ChatbotService:
                     message_type='agent_response',
                     sender_agent=current_agent,
                     content=response.get('response', ''),
+                    tokens_used=tokens_used,
                     metadata={
                         **response,
                         'files': files,
@@ -124,6 +132,7 @@ class ChatbotService:
                         message_type='agent_response',
                         sender_agent=current_agent,
                         content=f"Error: Agent '{target}' not found",
+                        tokens_used=tokens_used,
                         metadata={'error': True}
                     )
                     return
@@ -143,6 +152,7 @@ class ChatbotService:
                     sender_agent=current_agent,
                     recipient_agent=next_agent,
                     content=response.get('context', ''),
+                    tokens_used=tokens_used,
                     metadata={**response, 'revision_count': revision_count}
                 )
 
@@ -155,6 +165,7 @@ class ChatbotService:
                     message_type='agent_response',
                     sender_agent=current_agent,
                     content=response.get('response', 'Please provide the requested files.'),
+                    tokens_used=tokens_used,
                     metadata=response
                 )
                 thread.status = 'running'
@@ -167,6 +178,7 @@ class ChatbotService:
                     message_type='agent_response',
                     sender_agent=current_agent,
                     content=response.get('response', 'Task completed.'),
+                    tokens_used=tokens_used,
                     metadata=response
                 )
                 thread.status = 'completed'

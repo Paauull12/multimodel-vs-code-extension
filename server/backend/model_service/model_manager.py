@@ -129,16 +129,24 @@ class ModelManager:
             raise ValueError("API returned empty choices")
 
         content = result['choices'][0]['message']['content']
+
+        # Extract token usage
+        usage = result.get('usage', {})
+        total_tokens = usage.get('total_tokens', 0)
+
         print(f"Content: {content[:500]}")
+        print(f"Tokens used: {total_tokens}")
 
         if response_type == 'json':
             try:
-                return self.extract_json(content)
+                parsed_json = self.extract_json(content)
+                return parsed_json, total_tokens
             except ValueError as e:
                 print(f"Failed to parse JSON: {e}")
                 print(f"Plain text response: {content}")
-                return content
-        return content
+                return content, total_tokens
+
+        return content, total_tokens
 
     def call_agent_sync(self,
                         agent_name,
