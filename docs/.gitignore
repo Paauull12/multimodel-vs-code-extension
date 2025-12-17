@@ -1,2 +1,13 @@
 # Development Environments & Editors
 *.idea/
+*.vscode/
+
+# Generated
+.DS_Store
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.aux
