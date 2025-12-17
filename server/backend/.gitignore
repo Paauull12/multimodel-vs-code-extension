@@ -106,3 +106,4 @@ dmypy.json
 # ====================
 logs/
 *.log
+*runs/
