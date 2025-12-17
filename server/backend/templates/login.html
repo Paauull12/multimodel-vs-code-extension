@@ -1,10 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto;">
+    <div class="card">
+        <h2 style="margin-top:0; margin-bottom: 1.5rem; text-align: center;">Sign In</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <label>Username</label>
+            {{ form.username }}
+            <label>Password</label>
+            {{ form.password }}
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Log In</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

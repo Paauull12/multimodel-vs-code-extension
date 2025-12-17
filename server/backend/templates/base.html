@@ -2,9 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Vector DocManager</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        /* Layout */
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand { font-weight: 600; font-size: 1.1rem; color: #111827; text-decoration: none;}
+
+        .container {
+            max_width: 900px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Common Components */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 2rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-outline { background: white; border: 1px solid #d1d5db; color: #374151; }
+        .btn-outline:hover { background: #f9fafb; }
+
+        /* Inputs */
+        input[type="text"], input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        label { display: block; margin-bottom: 0.4rem; font-weight: 500; font-size: 0.9rem; }
+    </style>
 </head>
 <body>
+    <nav class="navbar">
+    <a href="{% url 'dashboard' %}" class="brand">◆ VectorVault</a>
+    {% if user.is_authenticated %}
+        <div>
+            <a href="{% url 'search_documents' %}" style="text-decoration:none; color:#4b5563; font-size:0.9rem; margin-right: 1.5rem;">Search</a>
+            <a href="{% url 'review_index' %}" style="text-decoration:none; color:#4b5563; font-size:0.9rem; margin-right: 1.5rem;">Review a Pull Request</a>
 
+            <span style="margin-right: 1rem; font-size: 0.9rem; color:#6b7280;">{{ user.username }}</span>
+            <a href="{% url 'logout' %}" style="text-decoration:none; color:#4b5563; font-size:0.9rem;">Logout</a>
+        </div>
+    {% endif %}
+</nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
 </body>
 </html>

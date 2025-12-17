@@ -1,10 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem; text-align: center;">
+        <h1 style="margin-bottom: 0.5rem;">Semantic Search</h1>
+        <p style="color: #6b7280;">Search your company documents by meaning, not just keywords.</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <form method="get" action="." style="display: flex; gap: 10px;">
+            <input type="text" name="q" value="{{ query }}" placeholder="e.g., 'What are the Q3 risks?'" style="margin-bottom: 0;">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    {% if query %}
+        <h3 style="margin-bottom: 1rem; color: #374151;">Results for "{{ query }}"</h3>
+        
+        {% if results %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for doc, score in results %}
+                <div class="card" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 1.1rem; color: #111827;">{{ doc.name }}</div>
+                        <div style="color: #6b7280; font-size: 0.9rem; margin-top: 0.2rem;">
+                            Uploaded by {{ doc.uploaded_by.username }} &bull; {{ doc.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: right;">
+                        <span style="
+                            display: inline-block; 
+                            padding: 0.25rem 0.75rem; 
+                            border-radius: 9999px; 
+                            font-size: 0.8rem; 
+                            font-weight: 600;
+                            background: {% if score > 0.7 %}#d1fae5{% elif score > 0.4 %}#fef3c7{% else %}#f3f4f6{% endif %};
+                            color: {% if score > 0.7 %}#065f46{% elif score > 0.4 %}#92400e{% else %}#374151{% endif %};
+                        ">
+                            {{ score|floatformat:2 }} Match
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; color: #6b7280; padding: 2rem;">
+                No relevant documents found.
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

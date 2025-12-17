@@ -71,6 +71,8 @@ static/
 # ====================
 .DS_Store
 Thumbs.db
+db.sqlite3
+.env
 
 # ====================
 # Coverage / testing
