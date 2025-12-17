@@ -38,10 +38,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatViewProvider = void 0;
 const vscode = __importStar(require("vscode"));
-const form_data_1 = __importDefault(require("form-data"));
 const chatWebviewGenerator_1 = require("../chatWebviewGenerator");
 const axios_1 = __importDefault(require("axios"));
-const path = __importStar(require("path"));
 class ChatViewProvider {
     _extensionUri;
     static viewType = 'analyzer.chatView';
@@ -79,12 +77,6 @@ class ChatViewProvider {
                 case 'clearChat':
                     this._clearChat();
                     break;
-                case 'approveFileRequest':
-                    this._handleFileRequestApproval(message.files);
-                    break;
-                case 'denyFileRequest':
-                    this._handleFileRequestDenial();
-                    break;
                 case 'securityAudit':
                     this._runSecurityAudit();
                     break;
@@ -92,7 +84,7 @@ class ChatViewProvider {
                     this._reviewPullRequest(message.url);
                     break;
                 case 'checkRules':
-                    this._checkRules(message);
+                    this._checkRules(message.code);
                     break;
                 default:
                     console.warn("Unknown command from webview:", message);
@@ -106,7 +98,16 @@ class ChatViewProvider {
         if (!this._view) {
             return;
         }
+        this._view.webview.postMessage({
+            command: 'receiveMessage',
+            message: {
+                text: text,
+                sender: 'user',
+                timestamp: new Date().toLocaleTimeString()
+            }
+        });
         try {
+            // Get authentication token 
             const token = await this._getAuthToken();
             // Send message to backend
             const response = await axios_1.default.post(`${this._apiBaseUrl}/chat/send/`, {
@@ -125,7 +126,7 @@ class ChatViewProvider {
                 await this._uploadFiles(files);
             }
             else {
-                // Start polling for bot response
+                // Only start polling if no files to upload
                 this._startPolling();
             }
         }
@@ -163,26 +164,31 @@ class ChatViewProvider {
                 if (data.status === 'completed' || data.status === 'failed') {
                     this._stopPolling();
                 }
-                // Check if bot is requesting files
-                if (data.latest_message?.metadata?.target === 'request_files') {
-                    console.log('Bot requesting files, stopping polling');
+                // Stop polling if waiting for user input (e.g., file upload request)
+                if (data.status === 'running' &&
+                    data.latest_message?.metadata?.target === 'request_files') {
+                    console.log('Waiting for files, stopping polling');
                     this._stopPolling();
-                    await this._handleFileRequest(data.latest_message);
-                    return;
                 }
                 // Display latest message if it's from the bot
                 if (data.latest_message && data.latest_message.sender !== 'user') {
+                    // Create a unique ID for this message (use message id or content hash)
                     const messageId = data.latest_message.id ||
                         JSON.stringify(data.latest_message.content);
+                    // Only display if it's a new message
                     if (messageId !== this._lastDisplayedMessageId) {
                         console.log('New message detected, displaying');
                         this._lastDisplayedMessageId = messageId;
                         this._displayBotMessage(data.latest_message);
                     }
+                    else {
+                        console.log('Message already displayed, skipping');
+                    }
                 }
             }
             catch (error) {
                 console.error('Polling error:', error);
+                // Stop polling on error
                 this._stopPolling();
             }
         }, 1000);
@@ -193,176 +199,29 @@ class ChatViewProvider {
             this._pollingInterval = undefined;
         }
     }
-    async _handleFileRequest(messageData) {
-        if (!this._view) {
-            return;
-        }
-        const requestedFiles = messageData.metadata?.requested_files || [];
-        const message = messageData.content || 'The assistant is requesting access to the following files:';
-        console.log('File request received:', requestedFiles);
-        // Resolve full paths for the requested files
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-        if (!workspaceFolder) {
-            this._view.webview.postMessage({
-                command: 'receiveMessage',
-                message: {
-                    text: 'Error: No workspace folder open. Please open a folder or workspace.',
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString(),
-                    isError: true
-                }
-            });
-            return;
-        }
-        // Check which files exist and prepare file info
-        const fileInfoPromises = requestedFiles.map(async (filePath) => {
-            try {
-                // Remove leading slash if present for proper path joining
-                const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-                const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, cleanPath);
-                // Check if file exists
-                try {
-                    const stat = await vscode.workspace.fs.stat(fullPath);
-                    return {
-                        path: filePath,
-                        fullPath: fullPath.fsPath,
-                        exists: true,
-                        size: stat.size
-                    };
-                }
-                catch {
-                    return {
-                        path: filePath,
-                        fullPath: fullPath.fsPath,
-                        exists: false,
-                        size: 0
-                    };
-                }
-            }
-            catch (error) {
-                console.error('Error checking file:', filePath, error);
-                return {
-                    path: filePath,
-                    fullPath: '',
-                    exists: false,
-                    size: 0
-                };
-            }
-        });
-        const fileInfos = await Promise.all(fileInfoPromises);
-        // Send file request to webview for user approval
-        this._view.webview.postMessage({
-            command: 'fileRequest',
-            message: message,
-            files: fileInfos,
-            timestamp: new Date().toLocaleTimeString()
-        });
-    }
-    async _handleFileRequestApproval(approvedFiles) {
-        if (!this._view || !this._currentThreadId) {
-            return;
-        }
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-        if (!workspaceFolder) {
-            return;
-        }
-        try {
-            // Read file contents
-            const fileContents = await Promise.all(approvedFiles.map(async (filePath) => {
-                try {
-                    const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-                    const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, cleanPath);
-                    const fileData = await vscode.workspace.fs.readFile(fullPath);
-                    const content = Buffer.from(fileData).toString('utf-8');
-                    return {
-                        name: path.basename(filePath),
-                        path: filePath,
-                        content: content
-                    };
-                }
-                catch (error) {
-                    console.error('Error reading file:', filePath, error);
-                    return null;
-                }
-            }));
-            const validFiles = fileContents.filter(f => f !== null);
-            if (validFiles.length > 0) {
-                // Upload approved files
-                await this._uploadFiles(validFiles);
-                // Show confirmation message
-                this._view.webview.postMessage({
-                    command: 'receiveMessage',
-                    message: {
-                        text: `✓ Sent ${validFiles.length} file(s) to the assistant.`,
-                        sender: 'bot',
-                        timestamp: new Date().toLocaleTimeString()
-                    }
-                });
-            }
-        }
-        catch (error) {
-            console.error('Error handling file request approval:', error);
-            this._view.webview.postMessage({
-                command: 'receiveMessage',
-                message: {
-                    text: `Error reading files: ${error.message}`,
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString(),
-                    isError: true
-                }
-            });
-        }
-    }
-    async _handleFileRequestDenial() {
-        if (!this._view || !this._currentThreadId) {
-            return;
-        }
-        try {
-            const token = await this._getAuthToken();
-            // Send denial to backend
-            await axios_1.default.post(`${this._apiBaseUrl}/chat/send/`, {
-                message: "I cannot provide those files.",
-                thread_id: this._currentThreadId
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Token ${token}` })
-                }
-            });
-            // Show confirmation
-            this._view.webview.postMessage({
-                command: 'receiveMessage',
-                message: {
-                    text: 'File request denied.',
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString()
-                }
-            });
-            // Resume polling
-            this._startPolling();
-        }
-        catch (error) {
-            console.error('Error handling file request denial:', error);
-        }
-    }
     _displayBotMessage(messageData) {
         if (!this._view) {
             return;
         }
         let text = messageData.content || '';
-        let files = [];
         // Handle code files if present
         if (messageData.files && messageData.files.length > 0) {
-            files = messageData.files;
+            text += '\n\n**Generated Files:**\n';
+            messageData.files.forEach((file) => {
+                text += `\n**${file.name}**\n\`\`\`\n${file.content}\n\`\`\`\n`;
+            });
         }
+        // Handle summary if present
+        // if (messageData.summary) {
+        //     text += JSON.stringify(messageData.summary, null, 2);
+        // }
         this._view.webview.postMessage({
             command: 'receiveMessage',
             message: {
                 text: text,
                 sender: 'bot',
                 timestamp: new Date(messageData.timestamp).toLocaleTimeString(),
-                metadata: messageData.metadata,
-                files: files
+                metadata: messageData.metadata
             }
         });
     }
@@ -372,50 +231,37 @@ class ChatViewProvider {
         }
         try {
             const token = await this._getAuthToken();
-            // Process each file to ensure proper format
-            const processedFiles = files.map(file => {
+            const fileContents = files.map(file => {
                 let content = '';
-                // Handle different input formats
-                if (typeof file === 'string') {
-                    console.warn('File is a string, skipping:', file);
-                    return null;
-                }
                 if (file.content) {
-                    // Check if content is base64 encoded (from file upload)
+                    // Remove data URL prefix (e.g., "data:text/plain;base64,...")
                     const base64Match = file.content.match(/^data:.*?;base64,(.*)$/);
                     if (base64Match) {
+                        // Decode base64 to text
                         try {
                             content = Buffer.from(base64Match[1], 'base64').toString('utf-8');
                         }
                         catch (e) {
                             console.error('Error decoding base64 for file:', file.name, e);
-                            content = file.content;
+                            content = file.content; // Fallback to raw content
                         }
                     }
                     else {
-                        // Content is already plain text
+                        // If not base64, use as-is
                         content = file.content;
                     }
                 }
-                else {
-                    console.warn('File has no content:', file);
-                }
-                // Return simple object format expected by backend
                 return {
-                    name: file.name || 'unnamed',
-                    path: file.path || file.name || 'unnamed',
+                    name: file.name,
                     content: content
                 };
             });
-            const validFiles = processedFiles.filter(f => f !== null && f !== undefined);
+            const validFiles = fileContents.filter(f => f !== null);
             if (validFiles.length === 0) {
-                console.warn('No valid files to upload');
                 return;
             }
-            console.log('Uploading files:', validFiles.map(f => f.name || f.path));
-            // Backend expects: {"files": [{name, path, content}, ...]}
             const response = await axios_1.default.post(`${this._apiBaseUrl}/chat/upload/${this._currentThreadId}/`, {
-                files: validFiles // Wrap in object with 'files' key
+                files: validFiles
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -423,16 +269,14 @@ class ChatViewProvider {
                 }
             });
             console.log('Files uploaded successfully:', response.data);
-            // Resume polling after upload
             this._startPolling();
         }
         catch (error) {
             console.error('Error uploading files:', error);
-            console.error('Error details:', error.response?.data);
             this._view?.webview.postMessage({
                 command: 'receiveMessage',
                 message: {
-                    text: `Error uploading files: ${error.response?.data?.error || error.response?.data?.detail || error.message}`,
+                    text: `Error uploading files: ${error.response?.data?.error || error.message}`,
                     sender: 'bot',
                     timestamp: new Date().toLocaleTimeString(),
                     isError: true
@@ -449,6 +293,7 @@ class ChatViewProvider {
         if (!this._view) {
             return;
         }
+        // Clear thread ID and stop polling
         this._currentThreadId = undefined;
         this._lastDisplayedMessageId = null;
         this._stopPolling();
@@ -463,51 +308,45 @@ class ChatViewProvider {
             vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview.css')
         ];
         const styleUri = webview.asWebviewUri(stylePaths[0]);
+        const scriptPaths = [
+            vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview-main.js'),
+            vscode.Uri.joinPath(this._extensionUri, 'out', 'webviews', 'chat', 'client', 'main.js'),
+            vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'chat', 'client', 'main.js')
+        ];
+        const scriptUri = webview.asWebviewUri(scriptPaths[0]);
         const markedUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'static', 'assets', 'marked.min.js'));
+        // Main script (chat logic)
         const mainScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "src", "webviews", "chat", "client", "main.js"));
+        // Router script (view switching)
         const routerScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "src", "webviews", "chat", "client", "viewRouter.js"));
+        console.log('CSS URI:', styleUri.toString());
+        console.log('Script URI:', scriptUri.toString());
+        console.log('Marked URI:', markedUri.toString());
         return (0, chatWebviewGenerator_1.generateWebviewContent)(styleUri.toString(), mainScriptUri.toString(), markedUri.toString()).replace("</body>", `  <script src="${routerScriptUri}"></script>\n</body>`);
     }
     _runSecurityAudit() {
         vscode.window.showInformationMessage("Running Security Audit...");
+        // TODO: implement logic
         this._view?.webview.postMessage({
             command: "securityAuditResult",
-            result: "Security audit results will appear here."
+            output: "Security audit results will appear here."
         });
     }
     _reviewPullRequest(url) {
         vscode.window.showInformationMessage("Reviewing PR: " + url);
+        // TODO: implement logic
         this._view?.webview.postMessage({
             command: "pullRequestResult",
-            result: `Pull request review for: ${url}`
+            output: `Pull request review for: ${url}`
         });
     }
-    async _checkRules(message) {
-        vscode.window.showInformationMessage("Running Rule Check...");
-        const policyFile = message.policy;
-        const codeFile = message.code;
-        try {
-            const policyBuffer = Buffer.from(policyFile.content, "base64");
-            const codeBuffer = Buffer.from(codeFile.content, "base64");
-            const form = new form_data_1.default();
-            form.append("policy_file", policyBuffer, policyFile.name);
-            form.append("code_file", codeBuffer, codeFile.name);
-            const response = await axios_1.default.post("http://127.0.0.1:8000/file/check-compliance/", form, {
-                headers: form.getHeaders()
-            });
-            const resultData = await response.data;
-            // const summary = result.summary ?? "No summary available.";
-            this._view?.webview.postMessage({
-                command: "rulesCheckResult",
-                result: resultData
-            });
-        }
-        catch (err) {
-            this._view?.webview.postMessage({
-                command: "rulesCheckResult",
-                result: "Error: " + err.message
-            });
-        }
+    _checkRules(code) {
+        vscode.window.showInformationMessage("Checking rules...");
+        // TODO: implement logic
+        this._view?.webview.postMessage({
+            command: "rulesCheckResult",
+            output: `Rules check complete for:\n\n${code}`
+        });
     }
 }
 exports.ChatViewProvider = ChatViewProvider;

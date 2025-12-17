@@ -35,6 +35,26 @@
         }
       ]
     },
+    "configurations": {
+      "title": "Analyzer Extension",
+      "properties": {
+        "analyzer.apiBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:8000/mock",
+          "description": "Base URL for the backend API"
+        },
+        "analyzer.authToken": {
+          "type": "string",
+          "default": "6808865f7e71f08bf114082b52c86dd17d583610",
+          "description": "Authentication token for API requests (optional)"
+        },
+        "analyzer.pollingInterval": {
+          "type": "number",
+          "default": 1000,
+          "description": "Polling interval in milliseconds"
+        }
+      }
+    },
     "commands": [
       {
         "command": "extension.analyzeProject",
@@ -64,7 +84,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/mocha": "^10.0.6",
-    "@types/node": "20.x",
+    "@types/node": "^20.19.25",
     "@types/vscode": "^1.106.1",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
