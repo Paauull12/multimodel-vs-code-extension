@@ -54,7 +54,7 @@
     "vscode:prepublish": "npm run package",
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.webview.json",
     "compile": "webpack --mode development",
-    "watch": "webpack --watch --mode development && tsc -w -p tsconfig.json & tsc -w -p tsconfig.webview.json",
+    "watch": "webpack --watch --mode development && tsc -w -p tsconfig.json",
     "package": "webpack --mode production --devtool hidden-source-map",
     "test-compile": "tsc -p ./tsconfig.json --outDir out-test",
     "pretest": "npm run test-compile && npm run compile",

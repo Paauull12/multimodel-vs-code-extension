@@ -2,21 +2,17 @@ import * as vscode from 'vscode';
 import { getProjectStructureRoot } from './tree-analyzer/treeBuilder';
 import { formatAsTextTree, generateJavaInstantiationCode } from './tree-analyzer/treeFormatter';
 import { ChatViewProvider } from './webviews/chat/ChatWebviewManager';
+import { LineValidator } from './line-validator/LineValidator';
 
-// Create a dedicated output channel accessible by the handler
 const ANALYSIS_CHANNEL = vscode.window.createOutputChannel(
     "Project Analysis Output"
 );
 
-/**
- * Handles the command execution for project analyzation.
- */
 async function handleAnalyzeProjectCommand() {
     ANALYSIS_CHANNEL.clear();
     ANALYSIS_CHANNEL.show(true);
     ANALYSIS_CHANNEL.appendLine("Starting Project Structure Analysis...");
 
-    // Execute the core analysis logic
     const rootNode = await getProjectStructureRoot();
     if (!rootNode) {
         ANALYSIS_CHANNEL.appendLine("Analysis failed: No workspace folder open.");
@@ -87,6 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
     context.subscriptions.push(clearChatCommand);
+    LineValidator.activate(context);
 }
 
 /**
