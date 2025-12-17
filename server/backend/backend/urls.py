@@ -20,8 +20,10 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('doc_management.urls')),
     path('admin/', admin.site.urls),
     path('api/auth/', include('auth_service.urls')),
     path('mock/', include("main_chatbot.urls")),
-    path('file/', include("check_rules.urls"))
+    path('file/', include("check_rules.urls")),
+    path('review/', include('code_reviewer.urls')),
 ]

@@ -1,10 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 style="margin: 0; font-size: 1.5rem;">Documents</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #6b7280;">Manage vectors for {{ company.name }}</p>
+    </div>
+    <a href="{% url 'upload_document' %}" class="btn btn-primary">+ Upload New</a>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+            <tr>
+                <th style="padding: 1rem; font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Name</th>
+                <th style="padding: 1rem; font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Date</th>
+                <th style="padding: 1rem; font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Uploader</th>
+                <th style="padding: 1rem; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 1rem; font-weight: 500;">{{ doc.name }}</td>
+                <td style="padding: 1rem; color: #6b7280; font-size: 0.9rem;">{{ doc.created_at|date:"M d, Y" }}</td>
+                <td style="padding: 1rem; color: #6b7280; font-size: 0.9rem;">{{ doc.uploaded_by.username }}</td>
+                <td style="padding: 1rem; text-align: right;">
+                    <form action="{% url 'delete_document' doc.id %}" method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="padding: 3rem; text-align: center; color: #9ca3af;">
+                    No documents found. Upload one to get started.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+🚨 CRITICAL RULE (OVERRIDES EVERYTHING ELSE): 🚨  
+                IF THE PRESS RELEASE DOES **NOT** CONTAIN A **TABLE**,  
+                YOU MUST RETURN:  
+                "THIS IS NOT A QUALITY EARNINGS PRESS RELEASE"  
+                ✅ This text must be placed **exactly in the `message` field of the returned JSON**.  
+                ❌ Do not evaluate any other part of the press release — the absence of a table is an automatic disqualifier.  
+                
+                
+                
+                I will send you a press release. Extract the following information:
+
+                1. Full company name
+                2. Stock market (if multiple, choose the most American one)
+                3. Ticker symbol
+                4. Date and time the PR was posted (format: Jul 31, 2025 4:01 PM)
+                
+                CRITICAL DATE CALCULATION RULES:
+                
+                FIRST, calculate Trade Date (TD):
+                - If PR is after 4:00 PM: TD = next trading day
+                - If PR is before 9:30 AM: TD = same day (if weekday) or next weekday
+                - If PR is 9:30 AM - 4:00 PM: TD = same day
+                
+                SECOND, calculate TD-1:
+                TD-1 is ALWAYS the trading day immediately before TD. Count backwards exactly one trading day from TD.
+                
+                IMPORTANT: TD-1 has NOTHING to do with the PR date! It's simply TD minus one trading day.
+                
+                CALENDAR EXAMPLE FOR CLARITY:
+                Mon Aug 4: PR published at 4:05 PM (after hours)
+                Tue Aug 5: This becomes TD (next trading day after Monday 4PM)
+                TD-1 = Mon Aug 4 (one trading day before Tuesday)
+                
+                ANOTHER EXAMPLE:
+                Fri Aug 1: PR published at 4:15 PM (after hours)
+                Mon Aug 4: This becomes TD (next trading day, skipping weekend)
+                TD-1 = Fri Aug 1 (one trading day before Monday)
+                
+                SIMPLE RULE: Count trading days like this:
+                - If TD is Tuesday → go back 1 day → TD-1 is Monday
+                - If TD is Wednesday → go back 1 day → TD-1 is Tuesday  
+                - If TD is Thursday → go back 1 day → TD-1 is Wednesday
+                - If TD is Friday → go back 1 day → TD-1 is Thursday
+                - If TD is Monday → go back to Friday (skip weekend) → TD-1 is Friday
+                
+                Return EXACTLY this format (one line):
+                Trade Date -1 | Trade Date | Company Name | Market | Ticker | Date
+                
+                Where dates are formatted as: Aug 1, 2025
+                
+                Then on the next two lines:
+                https://finance.yahoo.com/quote/TICKER/
+                https://finance.yahoo.com/quote/TICKER/history/
+                
+                IMPORTANT - WHAT COUNTS AS A QUALITY EARNINGS RELEASE:
+                PROCESS NORMALLY if the title or content indicates:
+                - "Reports [Quarter] Results"
+                - "Announces [Quarter] Results"
+                - "Operating Results"
+                - "Financial Results"
+                - "Earnings Results"
+                - "[Quarter] Earnings"
+                - Any mention of completed quarter/period with "results"
+                
+                Look for financial metrics in the content like:
+                - Revenue/Sales figures
+                - Net income/loss
+                - EPS (earnings per share)
+                - Operating income
+                - Financial comparisons
+                
+                REJECT (return "THIS IS NOT A QUALITY EARNINGS PRESS RELEASE" in the final JSON field for the 'message' value) if:
+                - It's announcing a FUTURE earnings date (e.g., "will report earnings on...")
+                - It's about executive changes with no financial data
+                - It's about products/partnerships with no financial results
+                - It's a dividend announcement with no earnings data
+                - It contains NO actual financial numbers or results
+                - It's a preliminary estimate without final numbers
+                - It's a press release where we are instructed to go on other sites (like SEC or own company website) for the actual earnings report, instead of it being here with the earning reports full data.
+                - It's very important that we have financial information on the page (actual earnings release stuff).
+                - It's a CORPORATE UPDATE (or anything else rather than an actual press release).
+                
+                
+                Very Important, IMPORTANT - this rule will overwrite all other rules! : If this press release does not have a table inside of it you have to return THIS IS NOT A QUALITY EARNINGS PRESS RELEASE" in the final JSON field for the 'message' - remember that this rule overwrites everything before or after it.
+                
+                ERROR HANDLING:
+                If the text I send you contains error messages like:
+                - "error"
+                - "failed"
+                - "charged"
+                - "ScraperAPI" errors
+                - HTML error pages
+                - Connection timeouts
+                - Any technical error messages
+                
+                Then return ONLY: ERROR FETCHING PLEASE RETRY
+                                
+                I would like that all the information I need to be put in a valid json structure and returned to me. 
+                
+                You will have to fill the following fields in the json.
+                1. The `company_name` this is the company name of the press release.
+                2. The `market` this is the market on which the company is trading.
+                3. The `ticker` this is the ticker of the company.
+                4. The `pr_date` this is the press release date of the press release
+                5. The `message` this filed will be `THIS IS A QUALITY EARNINGS PRESS RELEASE` if and only if the press release is a quality one and can be used. Otherwise `THIS IS NOT A QUALITY EARNINGS PRESS RELEASE`
+                6. The `reason` for which you think that the press release is or is not a quality one.
+                7. The `error` will contain error if there where any until now or ever.
+                
+                An example would be 
+                These fileds will always be returned even if they are empty.
+                    'company_name':
+                    'market': ''
+                    'ticker': '',
+                    'pr_date': '',
+                    'message': '',
+                    'reason': '',
+                    'error': ''

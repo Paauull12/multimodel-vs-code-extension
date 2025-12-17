@@ -12,11 +12,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import sys
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOCS_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "docs"))
+
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 if DOCS_PATH not in sys.path:
     sys.path.append(DOCS_PATH)
@@ -46,7 +52,8 @@ INSTALLED_APPS = [
     'auth_service',
     'model_service',
     'main_chatbot',
-    'check_rules'
+    'check_rules',
+    'doc_management'
 ]
 
 MIDDLEWARE = [
