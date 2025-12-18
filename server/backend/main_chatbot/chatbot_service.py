@@ -1,6 +1,11 @@
 from main_chatbot.models import Thread, Message, Agent
 from model_service.model_manager import ModelManager
 from django.contrib.auth.models import User
+from django.conf import settings
+import os
+import uuid
+import json
+from datetime import datetime
 
 
 class ChatbotService:
@@ -17,7 +22,41 @@ class ChatbotService:
             self.initialized = True
             self.model_manager = ModelManager()
 
+            # Initialize runs directory
+            self.runs_dir = os.path.join(settings.BASE_DIR, 'runs')
+            if not os.path.exists(self.runs_dir):
+                os.makedirs(self.runs_dir)
+
+    def _log_to_run_file(self, run_token, log_data):
+        file_name = f"run_{run_token}.log"
+        file_path = os.path.join(self.runs_dir, file_name)
+
+        timestamp = datetime.now().isoformat()
+
+        # Format the log entry
+        entry = {
+            "timestamp": timestamp,
+            **log_data
+        }
+
+        try:
+            with open(file_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry, indent=2, default=str))
+                f.write("\n,\n")
+        except Exception as e:
+            print(f"Error writing to log file: {e}")
+
     def receive_user_message(self, user, thread_id, user_message):
+        # Generate a unique token for this walkthrough
+        run_token = str(uuid.uuid4())
+
+        self._log_to_run_file(run_token, {
+            "event": "run_start",
+            "trigger": "user_message",
+            "user": user.username,
+            "thread_id": thread_id,
+            "content": user_message
+        })
 
         if thread_id:
             try:
@@ -44,14 +83,17 @@ class ChatbotService:
             user=user,
             recipient_agent=main_agent,
             content=user_message,
-            tokens_used=0  # User input doesn't consume generation tokens directly in this model
+            tokens_used=0
         )
 
-        self._run_agent_loop(thread)
+        self._run_agent_loop(thread, run_token)
 
         return thread.id
 
-    def _run_agent_loop(self, thread):
+    def _run_agent_loop(self, thread, run_token=None):
+        # If run_token wasn't passed, generate one
+        if not run_token:
+            run_token = str(uuid.uuid4())
 
         max_iterations = 15
         iteration = 0
@@ -61,6 +103,13 @@ class ChatbotService:
 
             current_agent = thread.current_agent
             messages = self._build_agent_messages(thread, current_agent)
+
+            self._log_to_run_file(run_token, {
+                "event": "agent_execution_start",
+                "iteration": iteration,
+                "agent": current_agent.name,
+                "messages_context_length": len(messages)
+            })
 
             try:
                 # Unpack response and token count
@@ -73,16 +122,31 @@ class ChatbotService:
             except Exception as e:
                 thread.status = 'failed'
                 thread.save()
+                error_msg = str(e)
+
+                self._log_to_run_file(run_token, {
+                    "event": "agent_execution_error",
+                    "agent": current_agent.name,
+                    "error": error_msg
+                })
+                
                 Message.objects.create(
                     thread=thread,
                     message_type='agent_response',
                     sender_agent=current_agent,
-                    content=f"Error occurred: {str(e)}",
-                    metadata={'error': True, 'error_message': str(e)}
+                    content=f"Error occurred: {error_msg}",
+                    metadata={'error': True, 'error_message': error_msg}
                 )
                 return
+            
+            self._log_to_run_file(run_token, {
+                "event": "agent_execution_success",
+                "agent": current_agent.name,
+                "response": response,
+                "tokens_used": tokens_used
+            })
 
-            # Ensure response is a dictionary (it should be if response_type='json' succeeded)
+            # Ensure response is a dictionary
             if not isinstance(response, dict):
                 # Fallback if parsing failed but content returned
                 response = {'target': 'unknown', 'response': str(response)}
@@ -119,6 +183,12 @@ class ChatbotService:
                 )
                 thread.status = 'completed'
                 thread.save()
+
+                self._log_to_run_file(run_token, {
+                    "event": "flow_complete",
+                    "reason": "target_user"
+                })
+
                 break
 
             elif target in ['architecture', 'builder', 'review']:
@@ -126,15 +196,22 @@ class ChatbotService:
                     next_agent = Agent.objects.get(name=target)
                 except Agent.DoesNotExist:
                     thread.status = 'failed'
-                    thread.save()
+                    error_msg = f"Error: Agent '{target}' not found"
+
+                    self._log_to_run_file(run_token, {
+                        "event": "agent_transition_error",
+                        "error": error_msg
+                    })
+
                     Message.objects.create(
                         thread=thread,
                         message_type='agent_response',
                         sender_agent=current_agent,
-                        content=f"Error: Agent '{target}' not found",
+                        content=error_msg,
                         tokens_used=tokens_used,
                         metadata={'error': True}
                     )
+
                     return
 
                 revision_count = 0
@@ -155,6 +232,12 @@ class ChatbotService:
                     tokens_used=tokens_used,
                     metadata={**response, 'revision_count': revision_count}
                 )
+
+                self._log_to_run_file(run_token, {
+                    "event": "agent_transition",
+                    "from": current_agent.name,
+                    "to": next_agent.name
+                })
 
                 thread.current_agent = next_agent
                 thread.save()
@@ -180,6 +263,12 @@ class ChatbotService:
                 
                 thread.status = 'awaiting_files'
                 thread.save()
+
+                self._log_to_run_file(run_token, {
+                    "event": "flow_pause",
+                    "reason": "request_files"
+                })
+
                 break
 
             elif target == 'request_workspace_tree':
@@ -188,6 +277,11 @@ class ChatbotService:
 
                 workspace_path = os.getcwd()
                 tree = get_file_structure(workspace_path)
+
+                self._log_to_run_file(run_token, {
+                    "event": "tool_execution",
+                    "tool": "request_workspace_tree"
+                })
 
                 Message.objects.create(
                     thread=thread,
@@ -222,11 +316,18 @@ class ChatbotService:
                 )
                 thread.status = 'completed'
                 thread.save()
+
+                self._log_to_run_file(run_token, {
+                    "event": "flow_complete",
+                    "reason": "default_completion"
+                })
+
                 break
 
         if iteration >= max_iterations:
             thread.status = 'failed'
             thread.save()
+
             Message.objects.create(
                 thread=thread,
                 message_type='agent_response',
@@ -235,8 +336,12 @@ class ChatbotService:
                 metadata={'error': True, 'reason': 'max_iterations'}
             )
 
-    def _build_agent_messages(self, thread, current_agent):
+            self._log_to_run_file(run_token, {
+                "event": "flow_failed",
+                "reason": "max_iterations_reached"
+            })
 
+    def _build_agent_messages(self, thread, current_agent):
         system_prompt = current_agent.prompt
 
         messages = [
@@ -304,13 +409,32 @@ class ChatbotService:
         return messages
 
     def receive_user_files(self, user, thread_id, files_content):
+        # Generate a unique token for this walkthrough/run
+        run_token = str(uuid.uuid4())
+
+        self._log_to_run_file(run_token, {
+            "event": "run_start",
+            "trigger": "user_files",
+            "user": user.username,
+            "thread_id": thread_id
+        })
 
         try:
             thread = Thread.objects.get(id=thread_id, user=user)
         except Thread.DoesNotExist:
             return None
         
-        formatted_content = "[USER PROVIDED FILES]\n\n" + files_content
+        files_str = ""
+        if isinstance(files_content, list):
+            for file_data in files_content:
+                name = file_data.get('name', 'Unknown')
+                path = file_data.get('path', 'Unknown')
+                content = file_data.get('content', '')
+                files_str += f"\n--- File: {path} ---\n{content}\n"
+        else:
+            files_str = str(files_content)
+
+        formatted_content = "[USER PROVIDED FILES]\n" + files_str
 
         Message.objects.create(
             thread=thread,
@@ -323,7 +447,7 @@ class ChatbotService:
         thread.status = 'running'
         thread.save()
         
-        self._run_agent_loop(thread)
+        self._run_agent_loop(thread, run_token)
 
         return thread.id
 

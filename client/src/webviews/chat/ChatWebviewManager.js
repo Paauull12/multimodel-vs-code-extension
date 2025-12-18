@@ -92,7 +92,7 @@ class ChatViewProvider {
                     this._reviewPullRequest(message.url);
                     break;
                 case 'checkRules':
-                    this._checkRules(message);
+                    this._checkRules(message.code);
                     break;
                 default:
                     console.warn("Unknown command from webview:", message);
@@ -153,6 +153,7 @@ class ChatViewProvider {
             }
             try {
                 const token = await this._getAuthToken();
+                console.log('TOKEN:', token);
                 const response = await axios_1.default.get(`${this._apiBaseUrl}/chat/poll/${this._currentThreadId}/`, {
                     headers: {
                         ...(token && { 'Authorization': `Token ${token}` })
@@ -443,7 +444,7 @@ class ChatViewProvider {
     async _getAuthToken() {
         const config = vscode.workspace.getConfiguration('analyzer');
         let token = config.get('authToken');
-        return token || "6808865f7e71f08bf114082b52c86dd17d583610";
+        return token || "c55131fd09ee2f2a8aa6162f12a85b02fea4275e";
     }
     _clearChat() {
         if (!this._view) {
@@ -472,14 +473,14 @@ class ChatViewProvider {
         vscode.window.showInformationMessage("Running Security Audit...");
         this._view?.webview.postMessage({
             command: "securityAuditResult",
-            result: "Security audit results will appear here."
+            output: "Security audit results will appear here."
         });
     }
     _reviewPullRequest(url) {
         vscode.window.showInformationMessage("Reviewing PR: " + url);
         this._view?.webview.postMessage({
             command: "pullRequestResult",
-            result: `Pull request review for: ${url}`
+            output: `Pull request review for: ${url}`
         });
     }
     async _checkRules(message) {
@@ -496,16 +497,15 @@ class ChatViewProvider {
                 headers: form.getHeaders()
             });
             const resultData = await response.data;
-            // const summary = result.summary ?? "No summary available.";
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                result: resultData
+                output: resultData
             });
         }
         catch (err) {
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                result: "Error: " + err.message
+                output: "Error: " + err.message
             });
         }
     }

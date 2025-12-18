@@ -1251,9 +1251,4 @@
         document.getElementById("prOutput").textContent = result;
       }
   });
-<<<<<<< HEAD
-
 })();
-=======
-})();
->>>>>>> origin/backend-client-integration

@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
-import FormData from "form-data";
+import FormData from 'form-data';
 import { generateWebviewContent } from '../chatWebviewGenerator';
 import axios from 'axios';
-<<<<<<< HEAD
-=======
 import * as path from 'path';
 
 interface Message {
@@ -20,7 +18,6 @@ interface FileRequest {
     requested_files: string[];
     message?: string;
 }
->>>>>>> origin/backend-client-integration
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'analyzer.chatView';
@@ -80,9 +77,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 case 'securityAudit':
                     this._runSecurityAudit();
                     break;
-                case 'checkRules':
-                    this._checkRules(message);
-                    break;
+
                 case 'reviewPullRequest':
                     this._reviewPullRequest(message.url);
                     break;
@@ -164,6 +159,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
             try {
                 const token = await this._getAuthToken();
+                console.log('TOKEN:', token);
                 const response = await axios.get(
                     `${this._apiBaseUrl}/chat/poll/${this._currentThreadId}/`,
                     {
@@ -507,7 +503,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private async _getAuthToken(): Promise<string | undefined> {
         const config = vscode.workspace.getConfiguration('analyzer');
         let token = config.get<string>('authToken');
-        return token || "6808865f7e71f08bf114082b52c86dd17d583610";
+        return token || "c55131fd09ee2f2a8aa6162f12a85b02fea4275e";
     }
 
     private _clearChat() {
@@ -556,7 +552,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         vscode.window.showInformationMessage("Running Security Audit...");
         this._view?.webview.postMessage({
             command: "securityAuditResult",
-            result: "Security audit results will appear here."
+            output: "Security audit results will appear here."
         });
     }
 
@@ -564,7 +560,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         vscode.window.showInformationMessage("Reviewing PR: " + url);
         this._view?.webview.postMessage({
             command: "pullRequestResult",
-            result: `Pull request review for: ${url}`
+            output: `Pull request review for: ${url}`
         });
     }
 
@@ -591,17 +587,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             );
 
             const resultData = await response.data;
-            // const summary = result.summary ?? "No summary available.";
 
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                result: resultData
+                output: resultData
             });
 
         } catch (err: any) {
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                result: "Error: " + err.message
+                output: "Error: " + err.message
             });
         }
     }
