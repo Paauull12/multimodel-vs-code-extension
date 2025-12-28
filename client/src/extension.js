@@ -39,6 +39,7 @@ const vscode = __importStar(require("vscode"));
 const treeBuilder_1 = require("./tree-analyzer/treeBuilder");
 const treeFormatter_1 = require("./tree-analyzer/treeFormatter");
 const ChatWebviewManager_1 = require("./webviews/chat/ChatWebviewManager");
+const LineValidator_1 = require("./line-validator/LineValidator");
 // Create a dedicated output channel accessible by the handler
 const ANALYSIS_CHANNEL = vscode.window.createOutputChannel("Project Analysis Output");
 /**
@@ -95,6 +96,7 @@ function activate(context) {
         vscode.window.showInformationMessage('Chat cleared');
     });
     context.subscriptions.push(clearChatCommand);
+    LineValidator_1.LineValidator.activate(context);
 }
 /**
  * This function is called when the extension is deactivated.

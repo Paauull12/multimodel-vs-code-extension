@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { getProjectStructureRoot } from './tree-analyzer/treeBuilder';
 import { formatAsTextTree, generateJavaInstantiationCode } from './tree-analyzer/treeFormatter';
 import { ChatViewProvider } from './webviews/chat/ChatWebviewManager';
+import { LineValidator } from './line-validator/LineValidator';
 
 // Create a dedicated output channel accessible by the handler
 const ANALYSIS_CHANNEL = vscode.window.createOutputChannel(
@@ -87,6 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
     context.subscriptions.push(clearChatCommand);
+    LineValidator.activate(context);
 }
 
 /**
