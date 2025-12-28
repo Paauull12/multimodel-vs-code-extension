@@ -94,6 +94,12 @@ class ChatViewProvider {
                 case 'checkRules':
                     this._checkRules(message.code);
                     break;
+                case 'getCompanyDocuments':
+                    this._fetchCompanyDocuments();
+                    break;
+                case 'checkCompanyRules':
+                    this._checkCompanyRules(message.code);
+                    break;
                 default:
                     console.warn("Unknown command from webview:", message);
             }
@@ -101,6 +107,35 @@ class ChatViewProvider {
         webviewView.onDidDispose(() => {
             this._stopPolling();
         });
+    }
+    async _fetchCompanyDocuments() {
+        const token = await this._getAuthToken();
+        const response = await axios_1.default.get(`http://127.0.0.1:8000/api/list/`, {
+            headers: { 'Authorization': `Token ${token}` }
+        });
+        // Trimitem lista înapoi la webview
+        this._view?.webview.postMessage({ command: 'companyDocumentsList', docs: response.data });
+    }
+    async _checkCompanyRules(code) {
+        try {
+            const token = await this._getAuthToken();
+            const response = await axios_1.default.post(`http://127.0.0.1:8000/file/check-company-compliance/`, { code: code }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}`
+                }
+            });
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult",
+                result: response.data
+            });
+        }
+        catch (err) {
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult",
+                result: err.response?.data?.error || err.message
+            });
+        }
     }
     async _handleUserMessage(text, files) {
         if (!this._view) {
@@ -444,7 +479,7 @@ class ChatViewProvider {
     async _getAuthToken() {
         const config = vscode.workspace.getConfiguration('analyzer');
         let token = config.get('authToken');
-        return token || "c55131fd09ee2f2a8aa6162f12a85b02fea4275e";
+        return token || "324ed2e3795db52aea7ed3828196e5af5493140e";
     }
     _clearChat() {
         if (!this._view) {

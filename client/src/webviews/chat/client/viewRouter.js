@@ -130,6 +130,37 @@
       </div>`;
   }
 
+  function generateCompanyRulesView() {
+    return `
+      <div class="check-rules">
+        <div class="check-rules-card">
+          <h3 class="check-rules-title">Company Compliance Check</h3>
+          <p class="check-rules-subtitle">
+            Paste your code below. The system will automatically check it against all company policies and design documents.
+          </p>
+
+          <div class="input-group">
+            <label class="label">Source Code</label>
+            <textarea 
+              id="complianceCodeInput" 
+              class="text-input" 
+              style="min-height: 200px; font-family: var(--vscode-editor-font-family); font-size: 12px;"
+              placeholder="Paste your code here..."
+            ></textarea>
+          </div>
+
+          <div class="actions">
+            <button id="runAutoCompliance" class="primary-button">Check Compliance</button>
+          </div>
+        </div>
+
+        <div id="companyRulesOutput" class="rules-output">
+          <div class="rules-placeholder">
+            Results will appear here after analysis.
+          </div>
+        </div>
+      </div>`;
+  }
 
   function render(mode) {
     switch (mode) {
@@ -145,12 +176,16 @@
       case "check-rules":
         container.innerHTML = generateCheckRulesView();
         break;
+      case "company-rules":
+        container.innerHTML = generateCompanyRulesView();
+        break;
       default:
         container.innerHTML = generateChatContent();
     }
 
     attachHandlersForMode(mode);
   }
+
 
   function attachHandlersForMode(mode) {
     if (mode === "chat") {
@@ -168,7 +203,9 @@
           vscode.postMessage({ command: "securityAudit" });
         });
     }
-
+    if (mode === "company-rules") {
+        setupCompanyRulesHandlers();
+    }
     if (mode === "pull-request") {
       document
         .getElementById("startPRReview")
@@ -197,6 +234,23 @@
           reader.onerror = reject;
           reader.readAsDataURL(file);
       });
+    }
+
+    function setupCompanyRulesHandlers() {
+      document.getElementById("runAutoCompliance")?.addEventListener("click", () => {
+      const codeText = document.getElementById("complianceCodeInput").value;
+      
+      if (!codeText.trim()) {
+        return;
+      }
+
+      renderRulesLoading(); 
+
+      vscode.postMessage({
+        command: "checkCompanyRules",
+        code: codeText
+      });
+    });
     }
 
     function setUpChcekRulesHandlers(){
@@ -1086,7 +1140,7 @@
   }
 
   function renderRulesResult(result) {
-      const container = document.getElementById("rulesOutput");
+      const container = document.getElementById("rulesOutput")||document.getElementById("companyRulesOutput");
       if (!container){
         return;
       } 
@@ -1111,21 +1165,21 @@
         return;
       }
 
-      if (
-        !result ||
-        typeof result !== "object" ||
-        !("compliant" in result) ||
-        !("violations" in result) ||
-        !("missing_implementations" in result)
-      ) {
-        container.innerHTML = `
-          <div class="rules-error">
-            ⚠️ Invalid response received.<br>
-            Please try again.
-          </div>
-        `;
-        return;
-      }
+      // if (
+      //   !result ||
+      //   typeof result !== "object" ||
+      //   !("compliant" in result) ||
+      //   !("violations" in result) ||
+      //   !("missing_implementations" in result)
+      // ) {
+      //   container.innerHTML = `
+      //     <div class="rules-error">
+      //       ⚠️ Invalid response received.<br>
+      //       Please try again.
+      //     </div>
+      //   `;
+      //   return;
+      // }
 
       if (!result.summary || typeof result.summary !== "string") {
         container.innerHTML = `

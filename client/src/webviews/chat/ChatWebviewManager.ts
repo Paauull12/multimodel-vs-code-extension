@@ -86,6 +86,13 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     this._checkRules(message.code);
                     break;
 
+                case 'getCompanyDocuments':
+                    this._fetchCompanyDocuments();
+                    break;
+
+                case 'checkCompanyRules':
+                    this._checkCompanyRules(message.code);
+                    break; 
                 default:
                     console.warn("Unknown command from webview:", message);
             }
@@ -94,6 +101,41 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.onDidDispose(() => {
             this._stopPolling();
         });
+    }
+
+    private async _fetchCompanyDocuments() {
+        const token = await this._getAuthToken();
+        const response = await axios.get(`http://127.0.0.1:8000/api/list/`, {
+            headers: { 'Authorization': `Token ${token}` }
+        });
+        // Trimitem lista înapoi la webview
+        this._view?.webview.postMessage({ command: 'companyDocumentsList', docs: response.data });
+    }
+
+    private async _checkCompanyRules(code: string) {
+        try{
+            const token = await this._getAuthToken();
+            const response = await axios.post(
+                `http://127.0.0.1:8000/file/check-company-compliance/`,
+                { code: code },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    }
+                }
+            );
+
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult", 
+                result: response.data
+            });
+        } catch (err: any){
+            this._view?.webview.postMessage({
+                command: "rulesCheckResult",
+                result: err.response?.data?.error || err.message
+            });
+        }
     }
 
     private async _handleUserMessage(text: string, files?: any[]) {
@@ -503,7 +545,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private async _getAuthToken(): Promise<string | undefined> {
         const config = vscode.workspace.getConfiguration('analyzer');
         let token = config.get<string>('authToken');
-        return token || "c55131fd09ee2f2a8aa6162f12a85b02fea4275e";
+        return token || "324ed2e3795db52aea7ed3828196e5af5493140e";
     }
 
     private _clearChat() {
