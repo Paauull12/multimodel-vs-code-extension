@@ -88,14 +88,8 @@ class ChatViewProvider {
                 case 'securityAudit':
                     this._runSecurityAudit();
                     break;
-                case 'reviewPullRequest':
-                    this._reviewPullRequest(message.url);
-                    break;
                 case 'checkRules':
                     this._checkRules(message.code);
-                    break;
-                case 'getCompanyDocuments':
-                    this._fetchCompanyDocuments();
                     break;
                 case 'checkCompanyRules':
                     this._checkCompanyRules(message.code);
@@ -107,14 +101,6 @@ class ChatViewProvider {
         webviewView.onDidDispose(() => {
             this._stopPolling();
         });
-    }
-    async _fetchCompanyDocuments() {
-        const token = await this._getAuthToken();
-        const response = await axios_1.default.get(`http://127.0.0.1:8000/api/list/`, {
-            headers: { 'Authorization': `Token ${token}` }
-        });
-        // Trimitem lista înapoi la webview
-        this._view?.webview.postMessage({ command: 'companyDocumentsList', docs: response.data });
     }
     async _checkCompanyRules(code) {
         try {
@@ -509,13 +495,6 @@ class ChatViewProvider {
         this._view?.webview.postMessage({
             command: "securityAuditResult",
             output: "Security audit results will appear here."
-        });
-    }
-    _reviewPullRequest(url) {
-        vscode.window.showInformationMessage("Reviewing PR: " + url);
-        this._view?.webview.postMessage({
-            command: "pullRequestResult",
-            output: `Pull request review for: ${url}`
         });
     }
     async _checkRules(message) {

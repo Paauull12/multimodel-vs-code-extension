@@ -42,7 +42,6 @@ export function generateWebviewContent(
               <button class="dropdown-item" data-mode="chat">Main chat</button>
               <button class="dropdown-item" data-mode="security">Security</button>
               <button class="dropdown-item" data-mode="check-rules">Check rules</button>
-              <button class="dropdown-item" data-mode="pull-request">Pull request</button>
               <button class="dropdown-item" data-mode="company-rules">Company rules</button>
             </div>
           </div>

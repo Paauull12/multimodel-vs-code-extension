@@ -78,16 +78,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     this._runSecurityAudit();
                     break;
 
-                case 'reviewPullRequest':
-                    this._reviewPullRequest(message.url);
-                    break;
-
                 case 'checkRules':
                     this._checkRules(message.code);
-                    break;
-
-                case 'getCompanyDocuments':
-                    this._fetchCompanyDocuments();
                     break;
 
                 case 'checkCompanyRules':
@@ -101,15 +93,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.onDidDispose(() => {
             this._stopPolling();
         });
-    }
-
-    private async _fetchCompanyDocuments() {
-        const token = await this._getAuthToken();
-        const response = await axios.get(`http://127.0.0.1:8000/api/list/`, {
-            headers: { 'Authorization': `Token ${token}` }
-        });
-        // Trimitem lista înapoi la webview
-        this._view?.webview.postMessage({ command: 'companyDocumentsList', docs: response.data });
     }
 
     private async _checkCompanyRules(code: string) {
@@ -213,9 +196,38 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
                 const data = response.data;
 
-                // Check if conversation is complete
-                if (data.status === 'completed' || data.status === 'failed') {
+                if (data.status === 'failed') {
                     this._stopPolling();
+                    this._view?.webview.postMessage({
+                        command: 'receiveMessage',
+                        message: {
+                            text: "Something went wrong on server side. Please try again!",
+                            sender: 'bot',
+                            timestamp: new Date().toLocaleTimeString(),
+                            isError: true
+                        }
+                    });
+                    return;
+                }
+
+                if (data.status === 'completed') {
+                    this._stopPolling();
+                    
+                    const hasContent = data.latest_message?.content && data.latest_message.content.trim().length > 0;
+                    const hasFiles = data.latest_message?.files && data.latest_message.files.length > 0;
+
+                    if (!hasContent && !hasFiles) {
+                        this._view?.webview.postMessage({
+                            command: 'receiveMessage',
+                            message: {
+                                text: "The assistant has finished processing, but did not generate a text response. Please try rephrasing your request!",
+                                sender: 'bot',
+                                timestamp: new Date().toLocaleTimeString(),
+                                isError: true
+                            }
+                        });
+                        return;
+                    }
                 }
 
                 // Check if bot is requesting files
@@ -595,14 +607,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this._view?.webview.postMessage({
             command: "securityAuditResult",
             output: "Security audit results will appear here."
-        });
-    }
-
-    private _reviewPullRequest(url: string) {
-        vscode.window.showInformationMessage("Reviewing PR: " + url);
-        this._view?.webview.postMessage({
-            command: "pullRequestResult",
-            output: `Pull request review for: ${url}`
         });
     }
 

@@ -6,7 +6,7 @@ from check_rules.documentRetriever import DocumentRetriever
 from huggingface_hub import InferenceClient
 
 import os
-os.environ['HF_TOKEN'] = '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'
+os.environ['HF_TOKEN'] = 'your HF token'
 
 class Reasoner:
     @staticmethod
