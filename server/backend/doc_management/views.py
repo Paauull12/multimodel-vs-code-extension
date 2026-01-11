@@ -3,6 +3,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
+
+from check_rules.documentLoader import DocumentLoader
 from .models import Document
 from .utils import get_embedding, compute_cosine_similarity, extract_text_from_file, get_best_snippet
 
@@ -58,9 +61,13 @@ def upload_document(request):
                     name=name,
                     file=file
                 )
+                
+                doc.save()
+                text_content = DocumentLoader.load(doc.file.path)
+                vector = get_embedding(text_content)
                 doc.set_embedding(vector)
                 doc.save()
-
+                
                 return redirect('dashboard')
             except Exception as e:
                 return render(request, 'documents/error.html', {'message': str(e)})

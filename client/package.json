@@ -45,7 +45,7 @@
         },
         "analyzer.authToken": {
           "type": "string",
-          "default": "6808865f7e71f08bf114082b52c86dd17d583610",
+          "default": "324ed2e3795db52aea7ed3828196e5af5493140e",
           "description": "Authentication token for API requests (optional)"
         },
         "analyzer.pollingInterval": {

@@ -71,19 +71,6 @@
         `;
   }
 
-  function generatePullRequestView() {
-    return `
-        <div class="pr-review">
-            <div class="input-group">
-                <label class="label" for="prUrl">Pull Request URL</label>
-                <div class="pr-input-row">
-                <input id="prUrl" placeholder="Paste URL" class="text-input"/>
-                <button id="startPRReview" class="primary-button">Start Review</button>
-                </div>
-            </div>
-            <pre id="prOutput" class="output-box"></pre>
-        </div>`;
-  }
 
   function generateCheckRulesView() {
     return `
@@ -130,6 +117,37 @@
       </div>`;
   }
 
+  function generateCompanyRulesView() {
+    return `
+      <div class="check-rules">
+        <div class="check-rules-card">
+          <h3 class="check-rules-title">Company Compliance Check</h3>
+          <p class="check-rules-subtitle">
+            Paste your code below. The system will automatically check it against all company policies and design documents.
+          </p>
+
+          <div class="input-group">
+            <label class="label">Source Code</label>
+            <textarea 
+              id="complianceCodeInput" 
+              class="text-input" 
+              style="min-height: 200px; font-family: var(--vscode-editor-font-family); font-size: 12px;"
+              placeholder="Paste your code here..."
+            ></textarea>
+          </div>
+
+          <div class="actions">
+            <button id="runAutoCompliance" class="primary-button">Check Compliance</button>
+          </div>
+        </div>
+
+        <div id="companyRulesOutput" class="rules-output">
+          <div class="rules-placeholder">
+            Results will appear here after analysis.
+          </div>
+        </div>
+      </div>`;
+  }
 
   function render(mode) {
     switch (mode) {
@@ -139,11 +157,11 @@
       case "security":
         container.innerHTML = generateSecurityView();
         break;
-      case "pull-request":
-        container.innerHTML = generatePullRequestView();
-        break;
       case "check-rules":
         container.innerHTML = generateCheckRulesView();
+        break;
+      case "company-rules":
+        container.innerHTML = generateCompanyRulesView();
         break;
       default:
         container.innerHTML = generateChatContent();
@@ -151,6 +169,7 @@
 
     attachHandlersForMode(mode);
   }
+
 
   function attachHandlersForMode(mode) {
     if (mode === "chat") {
@@ -168,26 +187,8 @@
           vscode.postMessage({ command: "securityAudit" });
         });
     }
-
-    if (mode === "pull-request") {
-      document
-        .getElementById("startPRReview")
-        ?.addEventListener("click", () => {
-          const url =
-            /** @type {HTMLInputElement} */ (document.getElementById("prUrl"))
-              ?.value || "";
-          vscode.postMessage({ command: "reviewPullRequest", url });
-        });
-
-      window.addEventListener("message", (event) => {
-        const { command, output } = event.data;
-        if (command === "pullRequestResult") {
-          const out = document.getElementById("prOutput");
-          if (out) {
-            out.textContent = output;
-          }
-        }
-      });
+    if (mode === "company-rules") {
+        setupCompanyRulesHandlers();
     }
 
     async function fileToBase64(file) {
@@ -197,6 +198,23 @@
           reader.onerror = reject;
           reader.readAsDataURL(file);
       });
+    }
+
+    function setupCompanyRulesHandlers() {
+      document.getElementById("runAutoCompliance")?.addEventListener("click", () => {
+      const codeText = document.getElementById("complianceCodeInput").value;
+      
+      if (!codeText.trim()) {
+        return;
+      }
+
+      renderRulesLoading(); 
+
+      vscode.postMessage({
+        command: "checkCompanyRules",
+        code: codeText
+      });
+    });
     }
 
     function setUpChcekRulesHandlers(){
@@ -1073,7 +1091,7 @@
   }
 
   function renderRulesLoading() {
-    const container = document.getElementById("rulesOutput");
+    const container = document.getElementById("rulesOutput") || document.getElementById("companyRulesOutput");
     if (!container){
       return;
     } 
@@ -1086,7 +1104,7 @@
   }
 
   function renderRulesResult(result) {
-      const container = document.getElementById("rulesOutput");
+      const container = document.getElementById("rulesOutput") || document.getElementById("companyRulesOutput");
       if (!container){
         return;
       } 
@@ -1106,22 +1124,6 @@
             ⚠️ Something went wrong.<br>
             Please try again.<br>
             <span class="rules-error-detail">${sanitizeHtml(result)}</span>
-          </div>
-        `;
-        return;
-      }
-
-      if (
-        !result ||
-        typeof result !== "object" ||
-        !("compliant" in result) ||
-        !("violations" in result) ||
-        !("missing_implementations" in result)
-      ) {
-        container.innerHTML = `
-          <div class="rules-error">
-            ⚠️ Invalid response received.<br>
-            Please try again.
           </div>
         `;
         return;
@@ -1160,11 +1162,6 @@
       }
 
       let parsedSummary = summary;
-      // try {
-      //     parsedSummary = marked?.parse(summary) || sanitize(summary);
-      // } catch {
-      //     parsedSummary = sanitize(summary);
-      // }
 
       container.innerHTML = `
         <div class="rules-header ${compliant ? "ok" : "fail"}">
@@ -1197,6 +1194,7 @@
         </div>
       `;
     }
+    
   // Default view
   render("chat");
 
@@ -1214,6 +1212,18 @@
     const mode = target?.dataset?.mode;
     if (mode) {
       render(mode);
+      if (toggle) {
+        const selectedText = target.textContent;
+        
+        toggle.innerHTML = `
+          ${selectedText}
+          <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        `;
+        
+        toggle.dataset.mode = mode;
+      }
       menu?.classList.add("hidden");
       return;
     }
@@ -1221,11 +1231,6 @@
     if (menu && !menu.contains(target)) {
       menu.classList.add("hidden");
     }
-  });
-
-  document.getElementById("startPRReview")?.addEventListener("click", () => {
-    const url = document.getElementById("prUrl").value;
-    vscode.postMessage({ command: "reviewPullRequest", url });
   });
 
   document
@@ -1245,10 +1250,6 @@
 
       if (command === "securityAuditResult") {
         document.getElementById("securityOutput").textContent = result;
-      }
-
-      if (command === "pullRequestResult") {
-        document.getElementById("prOutput").textContent = result;
       }
   });
 })();
