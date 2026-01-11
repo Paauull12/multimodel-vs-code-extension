@@ -21,6 +21,29 @@ class ChatbotService:
         if not hasattr(self, "initialized"):
             self.initialized = True
             self.model_manager = ModelManager()
+            # Initialize runs directory
+            self.runs_dir = os.path.join(settings.BASE_DIR, 'runs')
+            if not os.path.exists(self.runs_dir):
+                os.makedirs(self.runs_dir)
+
+    def _log_to_run_file(self, run_token, log_data):
+        file_name = f"run_{run_token}.log"
+        file_path = os.path.join(self.runs_dir, file_name)
+
+        timestamp = datetime.now().isoformat()
+
+        # Format the log entry
+        entry = {
+            "timestamp": timestamp,
+            **log_data
+        }
+
+        try:
+            with open(file_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry, indent=2, default=str))
+                f.write("\n,\n")
+        except Exception as e:
+            print(f"Error writing to log file: {e}")
 
             # Initialize runs directory
             self.runs_dir = os.path.join(settings.BASE_DIR, 'runs')
@@ -196,6 +219,7 @@ class ChatbotService:
                     next_agent = Agent.objects.get(name=target)
                 except Agent.DoesNotExist:
                     thread.status = 'failed'
+                    thread.save()
                     error_msg = f"Error: Agent '{target}' not found"
 
                     self._log_to_run_file(run_token, {
@@ -251,7 +275,7 @@ class ChatbotService:
                     content=f"[FILES REQUESTED]: {response.get('files_requested', [])}",
                     metadata={**response, 'awaiting_files': True}
                 )
-                
+
                 Message.objects.create(
                     thread=thread,
                     message_type='agent_response',
@@ -260,7 +284,7 @@ class ChatbotService:
                     tokens_used=tokens_used,
                     metadata={**response, 'requires_user_action': True}
                 )
-                
+
                 thread.status = 'awaiting_files'
                 thread.save()
 
@@ -275,6 +299,8 @@ class ChatbotService:
                 from main_chatbot.utils import get_file_structure
                 import os
 
+                # Note: This uses os.getcwd() which might be the server dir, not user workspace.
+                # Assuming this behavior is intended as per original code.
                 workspace_path = os.getcwd()
                 tree = get_file_structure(workspace_path)
 
@@ -291,7 +317,7 @@ class ChatbotService:
                     content=response.get('message', '[REQUESTED WORKSPACE TREE]'),
                     metadata={**response, 'tree_request': True}
                 )
-                
+
                 # Then provide the tree as a system response (user role in context)
                 Message.objects.create(
                     thread=thread,
@@ -321,7 +347,7 @@ class ChatbotService:
                     "event": "flow_complete",
                     "reason": "default_completion"
                 })
-
+                
                 break
 
         if iteration >= max_iterations:
@@ -335,6 +361,10 @@ class ChatbotService:
                 content="Maximum iterations reached. Please start a new conversation.",
                 metadata={'error': True, 'reason': 'max_iterations'}
             )
+            self._log_to_run_file(run_token, {
+                "event": "flow_failed",
+                "reason": "max_iterations_reached"
+            })
 
             self._log_to_run_file(run_token, {
                 "event": "flow_failed",
@@ -399,7 +429,7 @@ class ChatbotService:
                         'content': msg.content
                     })
                     message_count += 1
-                    
+
             if message_count > 0 and message_count % self.PROMPT_REINJECT_INTERVAL == 0:
                 messages.append({
                     'role': 'system',
@@ -446,7 +476,7 @@ class ChatbotService:
 
         thread.status = 'running'
         thread.save()
-        
+
         self._run_agent_loop(thread, run_token)
 
         return thread.id
