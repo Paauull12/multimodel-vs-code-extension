@@ -1129,22 +1129,6 @@
         return;
       }
 
-      if (
-        !result ||
-        typeof result !== "object" ||
-        !("compliant" in result) ||
-        !("violations" in result) ||
-        !("missing_implementations" in result)
-      ) {
-        container.innerHTML = `
-          <div class="rules-error">
-            ⚠️ Invalid response received.<br>
-            Please try again.
-          </div>
-        `;
-        return;
-      }
-
       if (!result.summary || typeof result.summary !== "string") {
         container.innerHTML = `
           <div class="rules-error">
@@ -1210,6 +1194,7 @@
         </div>
       `;
     }
+    
   // Default view
   render("chat");
 

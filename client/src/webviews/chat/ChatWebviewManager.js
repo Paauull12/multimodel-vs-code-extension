@@ -41,7 +41,6 @@ const vscode = __importStar(require("vscode"));
 const form_data_1 = __importDefault(require("form-data"));
 const chatWebviewGenerator_1 = require("../chatWebviewGenerator");
 const axios_1 = __importDefault(require("axios"));
-const path = __importStar(require("path"));
 class ChatViewProvider {
     _extensionUri;
     static viewType = 'analyzer.chatView';
@@ -79,17 +78,17 @@ class ChatViewProvider {
                 case 'clearChat':
                     this._clearChat();
                     break;
-                case 'approveFileRequest':
-                    this._handleFileRequestApproval(message.files);
-                    break;
-                case 'denyFileRequest':
-                    this._handleFileRequestDenial();
-                    break;
+                // case 'approveFileRequest':
+                //     this._handleFileRequestApproval(message.files);
+                //     break;
+                // case 'denyFileRequest':
+                //     this._handleFileRequestDenial();
+                //     break;
                 case 'securityAudit':
                     this._runSecurityAudit();
                     break;
                 case 'checkRules':
-                    this._checkRules(message.code);
+                    this._checkRules(message);
                     break;
                 case 'checkCompanyRules':
                     this._checkCompanyRules(message.code);
@@ -181,17 +180,47 @@ class ChatViewProvider {
                     }
                 });
                 const data = response.data;
-                // Check if conversation is complete
-                if (data.status === 'completed' || data.status === 'failed') {
+                if (data.status === 'failed') {
                     this._stopPolling();
-                }
-                // Check if bot is requesting files
-                if (data.latest_message?.metadata?.target === 'request_files') {
-                    console.log('Bot requesting files, stopping polling');
-                    this._stopPolling();
-                    await this._handleFileRequest(data.latest_message);
+                    this._view?.webview.postMessage({
+                        command: 'receiveMessage',
+                        message: {
+                            text: "Something went wrong on server side. Please try again!",
+                            sender: 'bot',
+                            timestamp: new Date().toLocaleTimeString(),
+                            isError: true
+                        }
+                    });
                     return;
                 }
+                if (data.status === 'completed') {
+                    this._stopPolling();
+                    const hasContent = data.latest_message?.content && data.latest_message.content.trim().length > 0;
+                    if (!hasContent) {
+                        this._view?.webview.postMessage({
+                            command: 'receiveMessage',
+                            message: {
+                                text: "The assistant has finished processing, but did not generate a text response. Please try rephrasing your request!",
+                                sender: 'bot',
+                                timestamp: new Date().toLocaleTimeString(),
+                                isError: true
+                            }
+                        });
+                        return;
+                    }
+                }
+                if (data.status === 'awaiting_files') {
+                    this._stopPolling();
+                    // optional: afișează un mesaj “încarcă fișierele cerute”
+                    return;
+                }
+                // Check if bot is requesting files
+                // if (data.latest_message?.metadata?.target === 'request_files') {
+                //     console.log('Bot requesting files, stopping polling');
+                //     this._stopPolling();
+                //     await this._handleFileRequest(data.latest_message);
+                //     return;
+                // }
                 // Display latest message if it's from the bot
                 if (data.latest_message && data.latest_message.sender !== 'user') {
                     const messageId = data.latest_message.id ||
@@ -215,158 +244,159 @@ class ChatViewProvider {
             this._pollingInterval = undefined;
         }
     }
-    async _handleFileRequest(messageData) {
-        if (!this._view) {
-            return;
-        }
-        const requestedFiles = messageData.metadata?.requested_files || [];
-        const message = messageData.content || 'The assistant is requesting access to the following files:';
-        console.log('File request received:', requestedFiles);
-        // Resolve full paths for the requested files
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-        if (!workspaceFolder) {
-            this._view.webview.postMessage({
-                command: 'receiveMessage',
-                message: {
-                    text: 'Error: No workspace folder open. Please open a folder or workspace.',
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString(),
-                    isError: true
-                }
-            });
-            return;
-        }
-        // Check which files exist and prepare file info
-        const fileInfoPromises = requestedFiles.map(async (filePath) => {
-            try {
-                // Remove leading slash if present for proper path joining
-                const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-                const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, cleanPath);
-                // Check if file exists
-                try {
-                    const stat = await vscode.workspace.fs.stat(fullPath);
-                    return {
-                        path: filePath,
-                        fullPath: fullPath.fsPath,
-                        exists: true,
-                        size: stat.size
-                    };
-                }
-                catch {
-                    return {
-                        path: filePath,
-                        fullPath: fullPath.fsPath,
-                        exists: false,
-                        size: 0
-                    };
-                }
-            }
-            catch (error) {
-                console.error('Error checking file:', filePath, error);
-                return {
-                    path: filePath,
-                    fullPath: '',
-                    exists: false,
-                    size: 0
-                };
-            }
-        });
-        const fileInfos = await Promise.all(fileInfoPromises);
-        // Send file request to webview for user approval
-        this._view.webview.postMessage({
-            command: 'fileRequest',
-            message: message,
-            files: fileInfos,
-            timestamp: new Date().toLocaleTimeString()
-        });
-    }
-    async _handleFileRequestApproval(approvedFiles) {
-        if (!this._view || !this._currentThreadId) {
-            return;
-        }
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-        if (!workspaceFolder) {
-            return;
-        }
-        try {
-            // Read file contents
-            const fileContents = await Promise.all(approvedFiles.map(async (filePath) => {
-                try {
-                    const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-                    const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, cleanPath);
-                    const fileData = await vscode.workspace.fs.readFile(fullPath);
-                    const content = Buffer.from(fileData).toString('utf-8');
-                    return {
-                        name: path.basename(filePath),
-                        path: filePath,
-                        content: content
-                    };
-                }
-                catch (error) {
-                    console.error('Error reading file:', filePath, error);
-                    return null;
-                }
-            }));
-            const validFiles = fileContents.filter(f => f !== null);
-            if (validFiles.length > 0) {
-                // Upload approved files
-                await this._uploadFiles(validFiles);
-                // Show confirmation message
-                this._view.webview.postMessage({
-                    command: 'receiveMessage',
-                    message: {
-                        text: `✓ Sent ${validFiles.length} file(s) to the assistant.`,
-                        sender: 'bot',
-                        timestamp: new Date().toLocaleTimeString()
-                    }
-                });
-            }
-        }
-        catch (error) {
-            console.error('Error handling file request approval:', error);
-            this._view.webview.postMessage({
-                command: 'receiveMessage',
-                message: {
-                    text: `Error reading files: ${error.message}`,
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString(),
-                    isError: true
-                }
-            });
-        }
-    }
-    async _handleFileRequestDenial() {
-        if (!this._view || !this._currentThreadId) {
-            return;
-        }
-        try {
-            const token = await this._getAuthToken();
-            // Send denial to backend
-            await axios_1.default.post(`${this._apiBaseUrl}/chat/send/`, {
-                message: "I cannot provide those files.",
-                thread_id: this._currentThreadId
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Token ${token}` })
-                }
-            });
-            // Show confirmation
-            this._view.webview.postMessage({
-                command: 'receiveMessage',
-                message: {
-                    text: 'File request denied.',
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString()
-                }
-            });
-            // Resume polling
-            this._startPolling();
-        }
-        catch (error) {
-            console.error('Error handling file request denial:', error);
-        }
-    }
+    // private async _handleFileRequest(messageData: any) {
+    //     if (!this._view) {
+    //         return;
+    //     }
+    //     const requestedFiles = messageData.metadata?.files_requested || [];
+    //     const message = messageData.content || 'The assistant is requesting access to the following files:';
+    //     console.log('File request received:', requestedFiles);
+    //     // Resolve full paths for the requested files
+    //     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    //     if (!workspaceFolder) {
+    //         this._view.webview.postMessage({
+    //             command: 'receiveMessage',
+    //             message: {
+    //                 text: 'Error: No workspace folder open. Please open a folder or workspace.',
+    //                 sender: 'bot',
+    //                 timestamp: new Date().toLocaleTimeString(),
+    //                 isError: true
+    //             }
+    //         });
+    //         return;
+    //     }
+    //     // Check which files exist and prepare file info
+    //     const fileInfoPromises = requestedFiles.map(async (filePath: string) => {
+    //         try {
+    //             // Remove leading slash if present for proper path joining
+    //             const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+    //             const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, cleanPath);
+    //             // Check if file exists
+    //             try {
+    //                 const stat = await vscode.workspace.fs.stat(fullPath);
+    //                 return {
+    //                     path: filePath,
+    //                     fullPath: fullPath.fsPath,
+    //                     exists: true,
+    //                     size: stat.size
+    //                 };
+    //             } catch {
+    //                 return {
+    //                     path: filePath,
+    //                     fullPath: fullPath.fsPath,
+    //                     exists: false,
+    //                     size: 0
+    //                 };
+    //             }
+    //         } catch (error) {
+    //             console.error('Error checking file:', filePath, error);
+    //             return {
+    //                 path: filePath,
+    //                 fullPath: '',
+    //                 exists: false,
+    //                 size: 0
+    //             };
+    //         }
+    //     });
+    //     const fileInfos = await Promise.all(fileInfoPromises);
+    //     // Send file request to webview for user approval
+    //     this._view.webview.postMessage({
+    //         command: 'fileRequest',
+    //         message: message,
+    //         files: fileInfos,
+    //         timestamp: new Date().toLocaleTimeString()
+    //     });
+    // }
+    // private async _handleFileRequestApproval(approvedFiles: string[]) {
+    //     if (!this._view || !this._currentThreadId) {
+    //         return;
+    //     }
+    //     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    //     if (!workspaceFolder) {
+    //         return;
+    //     }
+    //     try {
+    //         // Read file contents
+    //         const fileContents = await Promise.all(
+    //             approvedFiles.map(async (filePath) => {
+    //                 try {
+    //                     const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+    //                     const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, cleanPath);
+    //                     const fileData = await vscode.workspace.fs.readFile(fullPath);
+    //                     const content = Buffer.from(fileData).toString('utf-8');
+    //                     return {
+    //                         name: path.basename(filePath),
+    //                         path: filePath,
+    //                         content: content
+    //                     };
+    //                 } catch (error) {
+    //                     console.error('Error reading file:', filePath, error);
+    //                     return null;
+    //                 }
+    //             })
+    //         );
+    //         const validFiles = fileContents.filter(f => f !== null);
+    //         if (validFiles.length > 0) {
+    //             // Upload approved files
+    //             await this._uploadFiles(validFiles);
+    //             // Show confirmation message
+    //             this._view.webview.postMessage({
+    //                 command: 'receiveMessage',
+    //                 message: {
+    //                     text: `✓ Sent ${validFiles.length} file(s) to the assistant.`,
+    //                     sender: 'bot',
+    //                     timestamp: new Date().toLocaleTimeString()
+    //                 }
+    //             });
+    //         }
+    //     } catch (error: any) {
+    //         console.error('Error handling file request approval:', error);
+    //         this._view.webview.postMessage({
+    //             command: 'receiveMessage',
+    //             message: {
+    //                 text: `Error reading files: ${error.message}`,
+    //                 sender: 'bot',
+    //                 timestamp: new Date().toLocaleTimeString(),
+    //                 isError: true
+    //             }
+    //         });
+    //     }
+    // }
+    // private async _handleFileRequestDenial() {
+    //     if (!this._view || !this._currentThreadId) {
+    //         return;
+    //     }
+    //     try {
+    //         const token = await this._getAuthToken();
+    //         // Send denial to backend
+    //         await axios.post(
+    //             `${this._apiBaseUrl}/chat/send/`,
+    //             {
+    //                 message: "I cannot provide those files.",
+    //                 thread_id: this._currentThreadId
+    //             },
+    //             {
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                     ...(token && { 'Authorization': `Token ${token}` })
+    //                 }
+    //             }
+    //         );
+    //         // Show confirmation
+    //         this._view.webview.postMessage({
+    //             command: 'receiveMessage',
+    //             message: {
+    //                 text: 'File request denied.',
+    //                 sender: 'bot',
+    //                 timestamp: new Date().toLocaleTimeString()
+    //             }
+    //         });
+    //         // Resume polling
+    //         this._startPolling();
+    //     } catch (error: any) {
+    //         console.error('Error handling file request denial:', error);
+    //     }
+    // }
     _displayBotMessage(messageData) {
         if (!this._view) {
             return;
@@ -465,15 +495,15 @@ class ChatViewProvider {
     async _getAuthToken() {
         const config = vscode.workspace.getConfiguration('analyzer');
         let token = config.get('authToken');
-        return token || "324ed2e3795db52aea7ed3828196e5af5493140e";
+        return token || "24e60db7ec851cd254001c363a05304057f51dd4";
     }
     _clearChat() {
         if (!this._view) {
             return;
         }
-        this._currentThreadId = undefined;
-        this._lastDisplayedMessageId = null;
-        this._stopPolling();
+        // this._currentThreadId = undefined;
+        // this._lastDisplayedMessageId = null;
+        // this._stopPolling();
         this._view.webview.postMessage({
             command: 'clearChat'
         });
@@ -513,7 +543,7 @@ class ChatViewProvider {
             const resultData = await response.data;
             this._view?.webview.postMessage({
                 command: "rulesCheckResult",
-                output: resultData
+                result: resultData
             });
         }
         catch (err) {
