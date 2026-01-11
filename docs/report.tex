@@ -515,6 +515,40 @@ The Review Agent acts like a linter and applies only non-functional improvements
     \item A \texttt{"next\_node"} directive, which is always set to \texttt{"none"}.
 \end{itemize}
 
+\subsubsection{Pull Request Agent}
+
+The Pull Request Agent is a specialized component designed to automate the code review process for external contributions hosted on version control platforms (e.g., GitHub). Unlike the standard Review Agent, which focuses on refining local files for readability, the Pull Request Agent acts as a strict Senior Software Engineer, analyzing specific code changes (diffs) and providing feedback directly on the pull request.
+
+Key responsibilities include:
+
+\begin{itemize}
+    \item \textbf{Diff-Based Analysis:} The agent fetches the raw patch data from a pull request and parses it to identify added or modified lines. It strictly targets its analysis to these changes to ensure relevance.
+    \item \textbf{Critical Validation:} It evaluates code for potential bugs, security vulnerabilities, naming conventions, and optimization opportunities.
+    \item \textbf{Noise Reduction:} To prevent overwhelming developers, the agent is configured to prioritize the most significant issues, limiting its output to a maximum of two comments per file.
+    \item \textbf{GitHub Integration:} Instead of modifying local files, this agent interfaces with the GitHub API to post line-specific review comments directly onto the pull request timeline.
+\end{itemize}
+
+\paragraph{Communication Behavior}
+The Pull Request Agent follows a distinct workflow separate from the primary development pipeline:
+\[
+\textbf{Fetch PR} \rightarrow \textbf{Parse Patch} \rightarrow \textbf{AI Analysis} \rightarrow \textbf{Filter \& Submit}
+\]
+
+It accepts a filename and numbered diff content as input and outputs a structured JSON object containing a list of review comments:
+
+\begin{verbatim}
+{
+  "reviews": [
+    { 
+      "line": 42, 
+      "comment": "Potential security risk: input is not validated." 
+    }
+  ]
+}
+\end{verbatim}
+
+The system implements a robust filtering mechanism that cross-references AI-generated line numbers with the actual patch data, discarding any comments that reference unchanged or invalid lines before submission.
+
 \subsection{Inter-Agent Communication Protocol}
 
 Communication between agents is strictly governed by JSON schemas. Outputs from one agent act as inputs for the next, ensuring deterministic workflows. The communication takes place exclusively in the following direction:

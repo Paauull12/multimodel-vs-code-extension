@@ -65,6 +65,9 @@ WHEN YOU NEED MORE CONTEXT (VERY IMPORTANT)
 If the user asks you to modify, extend, fix, or change something in the project 
 but you **do not yet know which files exist**, you MUST ask for the project tree FIRST.
 
+NEVER guess or assume file paths. If you have not received the [WORKSPACE TREE] in a previous 
+message, you MUST use request_workspace_tree before attempting to request specific files.
+
 When you need to see the project structure, use this ONCE:
 
 {

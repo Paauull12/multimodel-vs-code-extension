@@ -22,7 +22,7 @@ class ModelManager:
     def __init__(self):
         if not hasattr(self, "initialized"):
             self.config = {}
-            self.api_key = os.getenv("MODEL_MANAGER_API_KEY")
+            self.api_key = os.getenv("OPENROUTER_API_KEY")
             self.base_url = os.getenv("MODEL_MANAGER_BASE_URL", "https://openrouter.ai/api/v1/chat/completions")
             self.initialized = True
             self.load_config()

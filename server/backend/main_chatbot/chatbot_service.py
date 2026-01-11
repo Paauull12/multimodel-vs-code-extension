@@ -45,6 +45,30 @@ class ChatbotService:
         except Exception as e:
             print(f"Error writing to log file: {e}")
 
+            # Initialize runs directory
+            self.runs_dir = os.path.join(settings.BASE_DIR, 'runs')
+            if not os.path.exists(self.runs_dir):
+                os.makedirs(self.runs_dir)
+
+    def _log_to_run_file(self, run_token, log_data):
+        file_name = f"run_{run_token}.log"
+        file_path = os.path.join(self.runs_dir, file_name)
+
+        timestamp = datetime.now().isoformat()
+
+        # Format the log entry
+        entry = {
+            "timestamp": timestamp,
+            **log_data
+        }
+
+        try:
+            with open(file_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry, indent=2, default=str))
+                f.write("\n,\n")
+        except Exception as e:
+            print(f"Error writing to log file: {e}")
+
     def receive_user_message(self, user, thread_id, user_message):
         # Generate a unique token for this walkthrough
         run_token = str(uuid.uuid4())
@@ -128,7 +152,7 @@ class ChatbotService:
                     "agent": current_agent.name,
                     "error": error_msg
                 })
-
+                
                 Message.objects.create(
                     thread=thread,
                     message_type='agent_response',
@@ -137,7 +161,7 @@ class ChatbotService:
                     metadata={'error': True, 'error_message': error_msg}
                 )
                 return
-
+            
             self._log_to_run_file(run_token, {
                 "event": "agent_execution_success",
                 "agent": current_agent.name,
@@ -187,6 +211,7 @@ class ChatbotService:
                     "event": "flow_complete",
                     "reason": "target_user"
                 })
+
                 break
 
             elif target in ['architecture', 'builder', 'review']:
@@ -210,6 +235,7 @@ class ChatbotService:
                         tokens_used=tokens_used,
                         metadata={'error': True}
                     )
+
                     return
 
                 revision_count = 0
@@ -266,6 +292,7 @@ class ChatbotService:
                     "event": "flow_pause",
                     "reason": "request_files"
                 })
+
                 break
 
             elif target == 'request_workspace_tree':
@@ -320,11 +347,13 @@ class ChatbotService:
                     "event": "flow_complete",
                     "reason": "default_completion"
                 })
+                
                 break
 
         if iteration >= max_iterations:
             thread.status = 'failed'
             thread.save()
+
             Message.objects.create(
                 thread=thread,
                 message_type='agent_response',
@@ -337,8 +366,12 @@ class ChatbotService:
                 "reason": "max_iterations_reached"
             })
 
-    def _build_agent_messages(self, thread, current_agent):
+            self._log_to_run_file(run_token, {
+                "event": "flow_failed",
+                "reason": "max_iterations_reached"
+            })
 
+    def _build_agent_messages(self, thread, current_agent):
         system_prompt = current_agent.prompt
 
         messages = [
@@ -420,8 +453,18 @@ class ChatbotService:
             thread = Thread.objects.get(id=thread_id, user=user)
         except Thread.DoesNotExist:
             return None
+        
+        files_str = ""
+        if isinstance(files_content, list):
+            for file_data in files_content:
+                name = file_data.get('name', 'Unknown')
+                path = file_data.get('path', 'Unknown')
+                content = file_data.get('content', '')
+                files_str += f"\n--- File: {path} ---\n{content}\n"
+        else:
+            files_str = str(files_content)
 
-        formatted_content = "[USER PROVIDED FILES]\n\n" + files_content
+        formatted_content = "[USER PROVIDED FILES]\n" + files_str
 
         Message.objects.create(
             thread=thread,

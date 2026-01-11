@@ -1,0 +1,41 @@
+Project Design Specification
+Module: User Management System
+Version: 2.0
+
+1. Architectural Overview
+   The system uses a 3-layer architecture:
+   - Presentation Layer: UI handlers and routing classes.
+   - Service Layer: all business logic, validation, and workflows.
+   - Repository Layer: database access through the DatabaseRepository.
+
+2. Class Responsibilities
+   2.1. UserController (Presentation layer)
+        - Exposes routes: createUser(email, password)
+        - Delegates all logic to UserService
+        - Must not interact directly with the database
+
+   2.2. UserService (Service layer)
+        - Validates email format
+        - Validates password strength
+        - Calls UserRepository to insert a new user
+        - Logs "User created" using Logger::info
+
+   2.3. UserRepository (Repository layer)
+        - Implements: saveUser(email, password_hash)
+        - Hashes password using PasswordHasher
+        - Writes data to the database using Database::execute(sql, params)
+
+3. Validation Requirements
+   - Email must contain "@" and a domain.
+   - Password must be at least 8 characters.
+   - Password must be hashed before storing.
+
+4. Security Requirements
+   - No storage of plain-text passwords.
+   - No hard-coded credentials anywhere.
+   - No direct SQL string concatenation.
+
+5. Sequence Diagram (text)
+   UserController -> UserService -> PasswordHasher -> UserRepository -> Database
+
+End of Design
