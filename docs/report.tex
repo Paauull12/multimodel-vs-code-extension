@@ -209,7 +209,194 @@ Orchestration}}
 This summary provides an overview of the data sources, core algorithms, and key results from these recent works on 
 intelligent software assistants and LLM-based programming support systems.
 
-\section{Investigated Approaches}
+\section{Multi-Agent System Architecture}
+
+This section presents the design, responsibilities, and coordination logic of the multi-agent orchestration framework implemented in the system. The architecture adopts a distributed model in which four specialized agents --- the \textit{Main Agent}, \textit{Architecture Agent}, \textit{Builder Agent}, and \textit{Review Agent} --- collaborate to process user requests, generate code, validate software architecture, and perform quality assurance tasks. Each component operates under strict behavioral and communication constraints, enabling a reliable and deterministic pipeline.
+
+The agents communicate exclusively through structured JSON messages, ensuring unambiguous, machine-readable interactions suitable for automated pipelines or scalable multi-model execution.
+
+\subsection{Main Agent}
+
+The Main Agent serves as the orchestrator and central decision-making component of the system. It is the only agent permitted to communicate with the user directly. Its responsibilities include:
+
+\begin{itemize}
+    \item Interpreting the user's intent and request semantics.
+    \item Determining whether the request requires the full multi-agent development pipeline (Flow~1) or a direct non-code response (Flow~2).
+    \item Delegating tasks to the Architecture, Builder, or Review agents when appropriate.
+    \item Managing workflow ordering, context propagation, and JSON message formatting.
+    \item Ensuring that architectural design, code generation, and review steps occur in the correct sequence.
+\end{itemize}
+
+The Main Agent does \textbf{not} generate, evaluate, or modify code. Instead, it acts as a controller that routes tasks to more specialized agents. It ensures that architectural validation precedes code generation and that code is always reviewed before being communicated back to the user.
+
+\paragraph{Communication Behavior}
+The Main Agent produces three types of JSON messages:
+
+\begin{enumerate}
+    \item \textbf{Delegation Messages} sent to Architecture, Builder, or Review agents.
+    \item \textbf{User Responses} when the output is final or when Flow~2 is selected.
+    \item \textbf{File Requests} when additional project files are required to continue the workflow.
+\end{enumerate}
+
+\subsection{Architecture Agent}
+
+The Architecture Agent is responsible for evaluating and refactoring code from a structural and architectural perspective. Its role focuses on high-level software engineering principles, including modularity, maintainability, design patterns, and adherence to SOLID principles.
+
+Key responsibilities include:
+
+\begin{itemize}
+    \item Detecting architectural anti-patterns such as cyclic dependencies, tight coupling, or god classes.
+    \item Enforcing separation of concerns, clean boundaries, and correct layering.
+    \item Correcting or refining class design, dependency direction, and module organization.
+    \item Refactoring code when structural improvements are necessary, while preserving functionality.
+\end{itemize}
+
+The Architecture Agent outputs:
+
+\begin{itemize}
+    \item A full corrected file (never partial or diff-based).
+    \item A detailed list of architectural fixes.
+    \item A summary of the refactoring performed.
+    \item A routing directive (\texttt{"next\_node"}) indicating whether execution should proceed to the Builder Agent.
+\end{itemize}
+
+\paragraph{Communication Behavior}
+The Architecture Agent sends a JSON message back to the Main Agent, which then forwards the output to the Builder Agent for implementation of structural changes in new or existing files.
+
+\subsection{Builder Agent}
+
+The Builder Agent is the code implementation model responsible for generating and modifying program files based on instructions received from the Architecture Agent. It is a deterministic code generator with the following capabilities:
+
+\begin{itemize}
+    \item Creating new files when specified.
+    \item Modifying existing files while preserving required functionality.
+    \item Applying reviewer feedback precisely and without deviation.
+    \item Producing complete file content for all modified components.
+\end{itemize}
+
+The Builder Agent outputs a structured JSON object that includes:
+
+\begin{itemize}
+    \item Fully generated or modified files.
+    \item Optional dependencies introduced by the new implementation.
+    \item Setup instructions when required.
+    \item A task list for the Review Agent.
+\end{itemize}
+
+\paragraph{Communication Behavior}
+The Builder Agent always forwards its output to the Review Agent. No direct communication with the user or the Architecture Agent occurs.
+
+\subsection{Review Agent}
+
+The Review Agent functions as a readability and style correctness evaluator. It ensures that the generated code adheres to standard software quality guidelines related to:
+
+\begin{itemize}
+    \item Readability, naming clarity, and consistent formatting.
+    \item Removal of dead, redundant, or confusing code.
+    \item Simplification of expressions or refactoring long methods.
+    \item Ensuring code follows human-centered readability principles.
+\end{itemize}
+
+The Review Agent acts like a linter and applies only non-functional improvements. It must return:
+
+\begin{itemize}
+    \item A full, corrected version of the file.
+    \item A list of readability and style improvements.
+    \item A short summary of applied changes.
+    \item A \texttt{"next\_node"} directive, which is always set to \texttt{"none"}.
+\end{itemize}
+
+\subsection{Inter-Agent Communication Protocol}
+
+Communication between agents is strictly governed by JSON schemas. Outputs from one agent act as inputs for the next, ensuring deterministic workflows. The communication takes place exclusively in the following direction:
+
+\begin{center}
+\textbf{Main} $\rightarrow$ \textbf{Architecture} $\rightarrow$ \textbf{Builder} $\rightarrow$ \textbf{Review} $\rightarrow$ \textbf{Main}
+\end{center}
+
+Each agent returns structured outputs that must be:
+
+\begin{itemize}
+    \item Valid JSON.
+    \item Complete and self-contained.
+    \item Suitable for direct machine parsing.
+    \item Free of commentary, markdown, or partial information.
+\end{itemize}
+
+\subsection{Workflow Models}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{assets/MA_diagram.png}
+    \caption{Workflow diagram}
+    \label{fig:workflow}
+\end{figure}
+
+\subsubsection{Flow 1: Full Development Pipeline}
+
+Flow~1 is executed when the user's request requires architectural reasoning, code generation, modification, extension, debugging, or any form of code analysis. This workflow consists of the following stages:
+
+\begin{enumerate}
+    \item \textbf{User Request} reaches the Main Agent.
+    \item The Main Agent determines that architectural or code tasks are required.
+    \item The request is delegated to the Architecture Agent for structural analysis.
+    \item The Architecture Agent refactors the file and forwards its output to the Builder Agent.
+    \item The Builder Agent generates code and sends it to the Review Agent.
+    \item A loop may occur:
+    \[
+    \textbf{Builder} \leftrightarrow \textbf{Review}
+    \]
+    until the Review Agent is satisfied.
+    \item The Main Agent validates pipeline completion and responds to the user.
+\end{enumerate}
+
+\subsubsection{Flow 2: Direct Response Pipeline}
+
+Flow~2 applies to requests that require conceptual explanations, documentation, or non-programming answers. The workflow is:
+
+\[
+\textbf{User} \rightarrow \textbf{Main Agent} \rightarrow \textbf{User}
+\]
+
+No delegation to other agents occurs.
+
+\subsubsection{Flow 3: Direct Review Pipeline}
+
+Flow 3 is triggered when the user provides existing code and specifically requests a review for style, readability, or minor optimizations without requiring new feature implementation or architectural restructuring. In this scenario, the Main Agent bypasses the Architecture and Builder agents to engage the Review Agent directly.
+
+\[
+\textbf{User} \rightarrow \textbf{Main Agent} \rightarrow \textbf{Reviewer} \rightarrow \textbf{Main Agent} \rightarrow \textbf{User} 
+\]
+
+\begin{itemize} \item \textbf{Trigger:} The user submits code with a prompt such as "Review this for readability" or "Clean up this function". \item \textbf{Delegation:} The Main Agent identifies that no structural changes are needed and routes the code directly to the \textbf{Review Agent}. \item \textbf{Outcome:} The Review Agent applies non-functional improvements and returns the refined code to the Main Agent, which then presents it to the user. \end{itemize}
+
+\subsubsection{Flow 4: Direct Architectural Consultation}
+
+Flow 4 is utilized when a user seeks high-level design advice, structural planning, or a critique of an existing project's organization without requesting immediate code generation. This flow optimizes token usage by avoiding the implementation and review stages when only conceptual guidance is required.
+
+\[
+\textbf{User} \rightarrow \textbf{Main Agent} \rightarrow \textbf{Architecture Agent} \rightarrow \textbf{Main Agent} \rightarrow \textbf{User} 
+\]
+
+\begin{itemize} \item \textbf{Trigger:} The user asks questions regarding design patterns, project structure, or SOLID principles, such as "How should I structure a Django app for this feature?". \item \textbf{Delegation:} The Main Agent delegates the request exclusively to the \textbf{Architecture Agent}. \item \textbf{Outcome:} The Architecture Agent provides an architectural summary or a refactoring plan without forwarding tasks to the Builder Agent. The Main Agent then communicates these high-level recommendations back to the user. \end{itemize}
+
+\subsection{System Behavior and Determinism}
+
+The system is designed to be deterministic and reproducible. Core behavioral rules include:
+
+\begin{itemize}
+    \item Agents must never perform tasks outside their specialization (e.g., Main Agent writing code).
+    \item No agent may produce incomplete outputs.
+    \item All file outputs must be complete and rewritten in full.
+    \item Code must always be reviewed before being presented to the user.
+    \item The Main Agent must select the correct workflow based on intent detection.
+\end{itemize}
+
+\subsection{Conclusion}
+
+The multi-agent architecture provides a modular, reliable, and robust pipeline for generating high-quality software. Each agent specializes in a well-defined aspect of the software engineering lifecycle, and through strict communication protocols, the system ensures architectural correctness, production-quality code, and human-readable output. The specialization and cooperation of all four agents allow the system to scale to complex tasks while maintaining clarity, determinism, and correctness.
+
+\section{Investigated Approaches for Compliance Checking Agent}
 \subsection{Document Upload}
 
 \subsubsection{Data Indexing and Chunking}
@@ -313,28 +500,18 @@ The system utilizes a specialized utility function, \texttt{get\_file\_structure
 
 This approach ensures that the model maintains a complete understanding of the project structure while maximizing the available context window for reasoning and code generation tasks.
 
-\subsubsection{Our Approach}
+\newpage
+\subsection{Our Approach}
 
 \paragraph{Architecture Overview} 
 The implemented pipeline integrates several components designed to convert raw rule documents into structured compliance evaluations. The workflow proceeds as follows:
 
-\begin{center}
-\begin{tabular}{c}
-\textbf{Design Document (PDF/DOCX/TXT)} \\
-\quad $\downarrow$ Extract raw text \\
-\\
-\textbf{Semantic Chunker (MiniLM-L6-v2, threshold 0.7)} \\
-\quad $\downarrow$ Generate chunks and embeddings \\
-\\
-\textbf{Document Retriever (Cosine Similarity)} \\
-\quad $\downarrow$ Retrieve Top-K most relevant chunks \\
-\\
-\textbf{Reasoner (Llama 3.1-70B Instruct)} \\
-\quad $\downarrow$ Structured JSON response \\
-\\
-\textbf{Compliance Result (violations, explanations, fixes)} \\
-\end{tabular}
-\end{center}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{assets/RC_diagram.png}
+    \caption{Rules Check agent's workflow}
+    \label{fig:design}
+\end{figure}
 
 The architecture is optimized for rule documents, policy compliance tasks, and code-to-policy alignment scenarios. Each stage is modular, allowing future improvements (e.g., alternative embedding models, multi-agent orchestration, or hybrid symbolic–neural reasoning models).
 
@@ -367,7 +544,7 @@ As shown in Figure~\ref{fig:chunk_thresholds}, the threshold of 0.7 ensures that
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.8\textwidth]{assets/chunking_performance.png.png}
+    \includegraphics[width=0.8\textwidth]{assets/chunking_performance.png}
     \caption{Threshold and maximum chunking tests}
     \label{fig:chunk_thresholds}
 \end{figure}
@@ -416,106 +593,7 @@ To evaluate compliance between code snippets and document rules, the system uses
 }
 \end{verbatim}
 
-\section{Multi-Agent System Architecture}
-
-This section presents the design, responsibilities, and coordination logic of the multi-agent orchestration framework implemented in the system. The architecture adopts a distributed model in which four specialized agents --- the \textit{Main Agent}, \textit{Architecture Agent}, \textit{Builder Agent}, and \textit{Review Agent} --- collaborate to process user requests, generate code, validate software architecture, and perform quality assurance tasks. Each component operates under strict behavioral and communication constraints, enabling a reliable and deterministic pipeline.
-
-The agents communicate exclusively through structured JSON messages, ensuring unambiguous, machine-readable interactions suitable for automated pipelines or scalable multi-model execution.
-
-\subsection{Agent Overview}
-
-\subsubsection{Main Agent}
-
-The Main Agent serves as the orchestrator and central decision-making component of the system. It is the only agent permitted to communicate with the user directly. Its responsibilities include:
-
-\begin{itemize}
-    \item Interpreting the user's intent and request semantics.
-    \item Determining whether the request requires the full multi-agent development pipeline (Flow~1) or a direct non-code response (Flow~2).
-    \item Delegating tasks to the Architecture, Builder, or Review agents when appropriate.
-    \item Managing workflow ordering, context propagation, and JSON message formatting.
-    \item Ensuring that architectural design, code generation, and review steps occur in the correct sequence.
-\end{itemize}
-
-The Main Agent does \textbf{not} generate, evaluate, or modify code. Instead, it acts as a controller that routes tasks to more specialized agents. It ensures that architectural validation precedes code generation and that code is always reviewed before being communicated back to the user.
-
-\paragraph{Communication Behavior}
-The Main Agent produces three types of JSON messages:
-
-\begin{enumerate}
-    \item \textbf{Delegation Messages} sent to Architecture, Builder, or Review agents.
-    \item \textbf{User Responses} when the output is final or when Flow~2 is selected.
-    \item \textbf{File Requests} when additional project files are required to continue the workflow.
-\end{enumerate}
-
-\subsubsection{Architecture Agent}
-
-The Architecture Agent is responsible for evaluating and refactoring code from a structural and architectural perspective. Its role focuses on high-level software engineering principles, including modularity, maintainability, design patterns, and adherence to SOLID principles.
-
-Key responsibilities include:
-
-\begin{itemize}
-    \item Detecting architectural anti-patterns such as cyclic dependencies, tight coupling, or god classes.
-    \item Enforcing separation of concerns, clean boundaries, and correct layering.
-    \item Correcting or refining class design, dependency direction, and module organization.
-    \item Refactoring code when structural improvements are necessary, while preserving functionality.
-\end{itemize}
-
-The Architecture Agent outputs:
-
-\begin{itemize}
-    \item A full corrected file (never partial or diff-based).
-    \item A detailed list of architectural fixes.
-    \item A summary of the refactoring performed.
-    \item A routing directive (\texttt{"next\_node"}) indicating whether execution should proceed to the Builder Agent.
-\end{itemize}
-
-\paragraph{Communication Behavior}
-The Architecture Agent sends a JSON message back to the Main Agent, which then forwards the output to the Builder Agent for implementation of structural changes in new or existing files.
-
-\subsubsection{Builder Agent}
-
-The Builder Agent is the code implementation model responsible for generating and modifying program files based on instructions received from the Architecture Agent. It is a deterministic code generator with the following capabilities:
-
-\begin{itemize}
-    \item Creating new files when specified.
-    \item Modifying existing files while preserving required functionality.
-    \item Applying reviewer feedback precisely and without deviation.
-    \item Producing complete file content for all modified components.
-\end{itemize}
-
-The Builder Agent outputs a structured JSON object that includes:
-
-\begin{itemize}
-    \item Fully generated or modified files.
-    \item Optional dependencies introduced by the new implementation.
-    \item Setup instructions when required.
-    \item A task list for the Review Agent.
-\end{itemize}
-
-\paragraph{Communication Behavior}
-The Builder Agent always forwards its output to the Review Agent. No direct communication with the user or the Architecture Agent occurs.
-
-\subsubsection{Review Agent}
-
-The Review Agent functions as a readability and style correctness evaluator. It ensures that the generated code adheres to standard software quality guidelines related to:
-
-\begin{itemize}
-    \item Readability, naming clarity, and consistent formatting.
-    \item Removal of dead, redundant, or confusing code.
-    \item Simplification of expressions or refactoring long methods.
-    \item Ensuring code follows human-centered readability principles.
-\end{itemize}
-
-The Review Agent acts like a linter and applies only non-functional improvements. It must return:
-
-\begin{itemize}
-    \item A full, corrected version of the file.
-    \item A list of readability and style improvements.
-    \item A short summary of applied changes.
-    \item A \texttt{"next\_node"} directive, which is always set to \texttt{"none"}.
-\end{itemize}
-
-\subsubsection{Pull Request Agent}
+\section{Pull Request Agent}
 
 The Pull Request Agent is a specialized component designed to automate the code review process for external contributions hosted on version control platforms (e.g., GitHub). Unlike the standard Review Agent, which focuses on refining local files for readability, the Pull Request Agent acts as a strict Senior Software Engineer, analyzing specific code changes (diffs) and providing feedback directly on the pull request.
 
@@ -529,6 +607,14 @@ Key responsibilities include:
 \end{itemize}
 
 \paragraph{Communication Behavior}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{assets/PR_diagram.png}
+    \caption{Pull request agent's workflow}
+    \label{fig:design}
+\end{figure}
+
 The Pull Request Agent follows a distinct workflow separate from the primary development pipeline:
 \[
 \textbf{Fetch PR} \rightarrow \textbf{Parse Patch} \rightarrow \textbf{AI Analysis} \rightarrow \textbf{Filter \& Submit}
@@ -548,87 +634,84 @@ It accepts a filename and numbered diff content as input and outputs a structure
 \end{verbatim}
 
 The system implements a robust filtering mechanism that cross-references AI-generated line numbers with the actual patch data, discarding any comments that reference unchanged or invalid lines before submission.
+\section{Security Agent: Real-Time Line Validator}
 
-\subsection{Inter-Agent Communication Protocol}
-
-Communication between agents is strictly governed by JSON schemas. Outputs from one agent act as inputs for the next, ensuring deterministic workflows. The communication takes place exclusively in the following direction:
-
-\begin{center}
-\textbf{Main} $\rightarrow$ \textbf{Architecture} $\rightarrow$ \textbf{Builder} $\rightarrow$ \textbf{Review} $\rightarrow$ \textbf{Main}
-\end{center}
-
-Each agent returns structured outputs that must be:
-
-\begin{itemize}
-    \item Valid JSON.
-    \item Complete and self-contained.
-    \item Suitable for direct machine parsing.
-    \item Free of commentary, markdown, or partial information.
-\end{itemize}
-
-\subsection{Workflow Models}
+The system incorporates a specialized security component, the \texttt{LineValidator}, which operates within the Visual Studio Code environment to provide immediate feedback on code safety as it is being written. 
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.8\textwidth]{assets/workflow-brief.png}
-    \caption{Workflow diagram}
-    \label{fig:workflow}
+    \includegraphics[width=1\textwidth]{assets/S_diagram.png}
+    \caption{Workflow diagram for Security Agent}
+    \label{fig:design}
 \end{figure}
 
-\subsubsection{Flow 1: Full Development Pipeline}
+\subsection{Operational Mechanism}
 
-Flow~1 is executed when the user's request requires architectural reasoning, code generation, modification, extension, debugging, or any form of code analysis. This workflow consists of the following stages:
+The Security Agent monitors the \texttt{onDidChangeTextDocument} event in the editor. It triggers a validation check specifically when a user presses the \textit{Enter} key, signaling the completion of a line. To minimize noise, the agent only processes lines that contain at least four characters.
 
-\begin{enumerate}
-    \item \textbf{User Request} reaches the Main Agent.
-    \item The Main Agent determines that architectural or code tasks are required.
-    \item The request is delegated to the Architecture Agent for structural analysis.
-    \item The Architecture Agent refactors the file and forwards its output to the Builder Agent.
-    \item The Builder Agent generates code and sends it to the Review Agent.
-    \item A loop may occur:
-    \[
-    \textbf{Builder} \leftrightarrow \textbf{Review}
-    \]
-    until the Review Agent is satisfied.
-    \item The Main Agent validates pipeline completion and responds to the user.
-\end{enumerate}
+\subsection{Visual Feedback and Intent}
 
-\subsubsection{Flow 2: Direct Response Pipeline}
-
-Flow~2 applies to requests that require conceptual explanations, documentation, or non-programming answers. The workflow is:
-
-\[
-\textbf{User} \rightarrow \textbf{Main Agent} \rightarrow \textbf{User}
-\]
-
-No delegation to other agents occurs.
-
-\subsection{System Behavior and Determinism}
-
-The system is designed to be deterministic and reproducible. Core behavioral rules include:
-
+Once a line is validated, the agent applies temporary text decorations directly in the editor to inform the developer of the result:
 \begin{itemize}
-    \item Agents must never perform tasks outside their specialization (e.g., Main Agent writing code).
-    \item No agent may produce incomplete outputs.
-    \item All file outputs must be complete and rewritten in full.
-    \item Code must always be reviewed before being presented to the user.
-    \item The Main Agent must select the correct workflow based on intent detection.
+    \item \textbf{Checked (Green):} Indicates the line has been scanned and no immediate issues were found.
+    \item \textbf{Security Issue Detected (Red):} Alerts the user to a potential vulnerability or bad practice detected in that specific line.
 \end{itemize}
 
-\subsection{Conclusion}
+These decorations are designed to be non-intrusive, automatically disappearing after a 1.5-second timeout to maintain a clean workspace.
+\section{Agent Evaluation: The Judge System}
 
-The multi-agent architecture provides a modular, reliable, and robust pipeline for generating high-quality software. Each agent specializes in a well-defined aspect of the software engineering lifecycle, and through strict communication protocols, the system ensures architectural correctness, production-quality code, and human-readable output. The specialization and cooperation of all four agents allow the system to scale to complex tasks while maintaining clarity, determinism, and correctness.
+To ensure the reliability and continuous improvement of the multi-agent orchestration, the project includes an automated evaluation framework called the \texttt{Judge}. This system acts as an independent auditor that analyzes the execution logs of all agents in the pipeline.
 
-\section{Implementation Details}
+\subsection{Evaluation Criteria}
+
+The Judge utilizes the \texttt{gpt-4o-mini} model to review each step of an agent's execution based on a structured prompt. It evaluates the \textit{Main}, \textit{Architecture}, \textit{Builder}, and \textit{Reviewer} agents, producing a standardized JSON report for every step with the following attributes:
+\begin{itemize}
+    \item \textbf{Grade:} An integer from 0 to 10 reflecting the quality and success of the agent's action.
+    \item \textbf{Observations:} A concise summary identifying what went well or where the agent failed.
+    \item \textbf{Future Context:} Key knowledge points that must be passed to the subsequent execution step to maintain coherence.
+\end{itemize}
+
+\subsection{Performance Visualization}
+
+The system processes raw log files from the server's \texttt{runs/} directory and aggregates the scores into a persistent history. It automatically generates a performance plot for each run, allowing developers to visually track agent efficiency across complex multi-step tasks.
+
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.8\textwidth]{assets/design-brief.png}
+    \includegraphics[width=1\textwidth]{assets/grades_plot.png}
+    \caption{Example performance plot}
+    \label{fig:design}
+\end{figure}
+
+\newpage
+\section{Implementation Details}
+
+This section presents the concrete implementation work carried out during the development of the 
+Visual Studio Code extension.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{assets/Sys_Arch_diagram.png}
     \caption{Application architecture}
     \label{fig:design}
 \end{figure}
 
-This section presents the concrete implementation work carried out during the development of the 
-Visual Studio Code extension.
+\subsection{Backend Architecture and Persistence}
+
+The server-side implementation is built on Django and provides a scalable foundation for multi-agent interactions.
+\begin{itemize}
+    \item \textbf{Data Modeling:} The system tracks conversation history through the \texttt{Thread} and \texttt{Message} models. Each message records the specific agent involved and the number of tokens consumed for that interaction.
+    \item \textbf{Orchestration Service:} The \texttt{ChatbotService} manages the core execution loop. It handles agent transitions by interpreting the \texttt{target} field in the AI's response, determining whether to call the next agent or return a result to the user.
+    \item \textbf{REST API:} Frontend communication is facilitated through specialized views that handle message sending, long-polling for thread updates, and project file uploads.
+\end{itemize}
+
+\subsection{VS Code Extension Integration}
+
+The client-side extension is integrated into VS Code using TypeScript and the Webview API.
+\begin{itemize}
+    \item \textbf{Chat Sidebar:} The extension registers a \texttt{WebviewViewProvider} to render a persistent chat interface within the sidebar.
+    \item \textbf{Workspace Commands:} It registers commands such as \texttt{extension.analyzeProject} which allows users to trigger a manual scan of the directory structure.
+    \item \textbf{Output Channels:} A dedicated \texttt{ANALYSIS\_CHANNEL} is used to stream real-time logs and project analysis results to the user, ensuring transparency in the assistant's reasoning process.
+\end{itemize}
 
 \subsection{Communication Model}
 

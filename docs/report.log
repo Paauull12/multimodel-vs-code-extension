@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  18 DEC 2025 02:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.13)  14 JAN 2026 00:20
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/Users/mogalina/Desktop/multimodel-vs-code-extension/docs/report.tex
-(/Users/mogalina/Desktop/multimodel-vs-code-extension/docs/report.tex
+**/Users/croitoruandreea/Desktop/multimodel-vs-code-extension/docs/report.tex
+(/Users/croitoruandreea/Desktop/multimodel-vs-code-extension/docs/report.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (/usr/local/texlive/2025/texmf-dist/tex/latex/base/article.cls
@@ -247,7 +247,20 @@ File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count287
 \l__pdf_internal_box=\box54
-) (./report.aux)
+) (./report.aux
+
+LaTeX Warning: Label `fig:design' multiply defined.
+
+
+LaTeX Warning: Label `fig:design' multiply defined.
+
+
+LaTeX Warning: Label `fig:design' multiply defined.
+
+
+LaTeX Warning: Label `fig:design' multiply defined.
+
+)
 \openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
@@ -359,7 +372,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.41 ....3}Builder Agent}{17}{subsubsection.5.1.3}
+l.25 ...rline {4.8}Conclusion}{14}{subsection.4.8}
                                                   % [1])
 \tf@toc=\write4
 \openout4 = `report.toc'.
@@ -406,32 +419,32 @@ Overfull \hbox (6.44957pt too wide) in paragraph at lines 194--194
 [6]
 
 [7]
-
-[8]
-
-[9]
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 288.
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 260.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 
-[10]
+[8]
 
-[11]
-
-[12{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
-Underfull \hbox (badness 1112) in paragraph at lines 362--362
-[]\T1/lmr/m/n/12 Too strict; re-sulted in ex-ces-sively frag-mented
- []
-
-<assets/chunking_performance.png.png, id=254, 1780.6525pt x 988.69376pt>
-File: assets/chunking_performance.png.png Graphic file (type png)
-<use assets/chunking_performance.png.png>
-Package pdftex.def Info: assets/chunking_performance.png.png  used on input line 370.
-(pdftex.def)             Requested size: 362.37569pt x 201.20508pt.
+[9]
+<assets/MA_diagram.png, id=282, 1888.05376pt x 2473.24pt>
+File: assets/MA_diagram.png Graphic file (type png)
+<use assets/MA_diagram.png>
+Package pdftex.def Info: assets/MA_diagram.png  used on input line 330.
+(pdftex.def)             Requested size: 317.07614pt x 415.35054pt.
 
 
-[13 <./assets/chunking_performance.png.png>]
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+
+[10{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
+
+[11 <./assets/MA_diagram.png>]
+
+[12]
+
+[13]
 
 [14]
 
@@ -444,55 +457,106 @@ Package pdftex.def Info: assets/chunking_performance.png.png  used on input line
 [18]
 
 [19]
-
-[20]
-<assets/workflow-brief.png, id=293, 2285.53876pt x 1557.82pt>
-File: assets/workflow-brief.png Graphic file (type png)
-<use assets/workflow-brief.png>
-Package pdftex.def Info: assets/workflow-brief.png  used on input line 573.
-(pdftex.def)             Requested size: 362.37569pt x 246.97433pt.
+<assets/RC_diagram.png, id=337, 10144.90125pt x 2752.2825pt>
+File: assets/RC_diagram.png Graphic file (type png)
+<use assets/RC_diagram.png>
+Package pdftex.def Info: assets/RC_diagram.png  used on input line 511.
+(pdftex.def)             Requested size: 452.9679pt x 122.88145pt.
 
 
-[21 <./assets/workflow-brief.png>]
+[20 <./assets/RC_diagram.png>]
+Underfull \hbox (badness 1112) in paragraph at lines 539--539
+[]\T1/lmr/m/n/12 Too strict; re-sulted in ex-ces-sively frag-mented
+ []
+
+<assets/chunking_performance.png, id=350, 1780.6525pt x 988.69376pt>
+File: assets/chunking_performance.png Graphic file (type png)
+<use assets/chunking_performance.png>
+Package pdftex.def Info: assets/chunking_performance.png  used on input line 547.
+(pdftex.def)             Requested size: 362.37569pt x 201.20508pt.
+
+
+[21 <./assets/chunking_performance.png>]
 
 [22]
-<assets/design-brief.png, id=313, 2285.53876pt x 1557.82pt>
-File: assets/design-brief.png Graphic file (type png)
-<use assets/design-brief.png>
-Package pdftex.def Info: assets/design-brief.png  used on input line 625.
-(pdftex.def)             Requested size: 362.37569pt x 246.97433pt.
+
+[23]
+<assets/PR_diagram.png, id=365, 8851.0675pt x 2856.6725pt>
+File: assets/PR_diagram.png Graphic file (type png)
+<use assets/PR_diagram.png>
+Package pdftex.def Info: assets/PR_diagram.png  used on input line 613.
+(pdftex.def)             Requested size: 452.9679pt x 146.15477pt.
 
 
-[23 <./assets/design-brief.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 645--649
+[24 <./assets/PR_diagram.png>]
+<assets/S_diagram.png, id=372, 8486.70625pt x 1937.2375pt>
+File: assets/S_diagram.png Graphic file (type png)
+<use assets/S_diagram.png>
+Package pdftex.def Info: assets/S_diagram.png  used on input line 643.
+(pdftex.def)             Requested size: 452.9679pt x 103.37071pt.
+
+
+[25 <./assets/S_diagram.png>]
+<assets/grades_plot.png, id=379, 722.7pt x 433.62pt>
+File: assets/grades_plot.png Graphic file (type png)
+<use assets/grades_plot.png>
+Package pdftex.def Info: assets/grades_plot.png  used on input line 680.
+(pdftex.def)             Requested size: 452.9679pt x 271.77934pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+
+[26]
+<assets/Sys_Arch_diagram.png, id=384, 7037.29124pt x 3016.26875pt>
+File: assets/Sys_Arch_diagram.png Graphic file (type png)
+<use assets/Sys_Arch_diagram.png>
+Package pdftex.def Info: assets/Sys_Arch_diagram.png  used on input line 693.
+(pdftex.def)             Requested size: 452.9679pt x 194.13132pt.
+
+
+[27 <./assets/grades_plot.png> <./assets/Sys_Arch_diagram.png>]
+Overfull \hbox (17.33565pt too wide) in paragraph at lines 712--713
+[]\T1/lmr/bx/n/12 Workspace Com-mands: \T1/lmr/m/n/12 It reg-is-ters com-mands such as \T1/lmtt/m/n/12 extension.analyzeProject
+ []
+
+
+
+[28]
+Underfull \hbox (badness 10000) in paragraph at lines 728--732
 
  []
 
 
 
-[24]
+[29]
 
-[25] (./report.aux)
+[30] (./report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
+
+
+LaTeX Warning: There were multiply-defined labels.
+
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 7128629A62DC6F2D23E686682F762114;6095.
+(rerunfilecheck)             Checksum: 393B8821346CB086E8005B56918EE3C8;8213.
  ) 
 Here is how much of TeX's memory you used:
- 10540 strings out of 473190
- 165605 string characters out of 5715800
- 566143 words of memory out of 5000000
- 33579 multiletter control sequences out of 15000+600000
+ 10595 strings out of 473190
+ 166645 string characters out of 5715800
+ 566185 words of memory out of 5000000
+ 33616 multiletter control sequences out of 15000+600000
  616338 words of font info for 70 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,672b,588s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,679b,588s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt12.pfb>
-Output written on report.pdf (28 pages, 449608 bytes).
+Output written on report.pdf (33 pages, 2066003 bytes).
 PDF statistics:
- 379 PDF objects out of 1000 (max. 8388607)
- 328 compressed objects within 4 object streams
- 78 named destinations out of 1000 (max. 500000)
- 280 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 460 PDF objects out of 1000 (max. 8388607)
+ 396 compressed objects within 4 object streams
+ 96 named destinations out of 1000 (max. 500000)
+ 372 words of extra memory for PDF output out of 10000 (max. 10000000)
 

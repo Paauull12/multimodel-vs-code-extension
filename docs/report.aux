@@ -11,55 +11,72 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}\href  {https://arxiv.org/abs/2505.16339}{Rethinking Code Review Workflows with LLM Assistance}}{4}{subsection.3.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}\href  {https://arxiv.org/abs/2510.01379}{Enhanced Code Generation via Multi-Stage Performance-Guided LLM Orchestration}}{5}{subsection.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}\href  {https://arxiv.org/abs/2504.08525}{Enhancing State Awareness for Multi-Step LLM Agent Tasks}}{5}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Investigated Approaches}{6}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Document Upload}{6}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Data Indexing and Chunking}{6}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Importance of Chunking}{6}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Types of Chunking}{7}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subparagraph}{Fixed-Size Chunking}{7}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subparagraph}{Sentence-Based Chunking}{7}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subparagraph}{Semantic-Based Chunking}{8}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subparagraph}{Document-Specific Chunking}{8}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subparagraph}{Agentic Chunking}{8}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Embedding}{9}{subsubsection.4.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Word-Level Models}{9}{subsubsection.4.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Contextual Embedding Models}{9}{subsubsection.4.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Sentence and Document Embedding Models}{9}{subsubsection.4.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Token Efficiency and Data Representation}{9}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Token Counting Mechanism}{10}{subsubsection.4.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}TOON Formatting (Token-Oriented Object Notation)}{10}{subsubsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Concept and Advantages}{10}{subsubsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Implementation}{11}{subsubsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Our Approach}{11}{subsubsection.4.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Architecture Overview}{11}{subsubsection.4.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Chunking Strategy}{12}{subsubsection.4.2.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Threshold and maximum chunking tests}}{13}{figure.1}\protected@file@percent }
-\newlabel{fig:chunk_thresholds}{{1}{13}{Threshold and maximum chunking tests}{figure.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Embedding Model Selection}{13}{figure.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Reasoner: LLM-Based Compliance Engine}{14}{figure.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subparagraph}{Example Output}{15}{figure.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Multi-Agent System Architecture}{15}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Agent Overview}{15}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Main Agent}{15}{subsubsection.5.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{16}{subsubsection.5.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Architecture Agent}{16}{subsubsection.5.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{17}{subsubsection.5.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.3}Builder Agent}{17}{subsubsection.5.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{18}{subsubsection.5.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.4}Review Agent}{18}{subsubsection.5.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.5}Pull Request Agent}{19}{subsubsection.5.1.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{20}{subsubsection.5.1.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Inter-Agent Communication Protocol}{20}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Workflow Models}{21}{subsection.5.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Workflow diagram}}{21}{figure.2}\protected@file@percent }
-\newlabel{fig:workflow}{{2}{21}{Workflow diagram}{figure.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}Flow 1: Full Development Pipeline}{21}{subsubsection.5.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}Flow 2: Direct Response Pipeline}{22}{subsubsection.5.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}System Behavior and Determinism}{22}{subsection.5.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Conclusion}{23}{subsection.5.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Implementation Details}{23}{section.6}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Application architecture}}{23}{figure.3}\protected@file@percent }
-\newlabel{fig:design}{{3}{23}{Application architecture}{figure.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Communication Model}{23}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}File Retrieval System}{24}{subsection.6.2}\protected@file@percent }
-\gdef \@abspage@last{28}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Multi-Agent System Architecture}{6}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Main Agent}{6}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{7}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Architecture Agent}{7}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{8}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Builder Agent}{8}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{9}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Review Agent}{9}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Inter-Agent Communication Protocol}{10}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Workflow Models}{10}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}Flow 1: Full Development Pipeline}{10}{subsubsection.4.6.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Workflow diagram}}{11}{figure.1}\protected@file@percent }
+\newlabel{fig:workflow}{{1}{11}{Workflow diagram}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.2}Flow 2: Direct Response Pipeline}{12}{subsubsection.4.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.3}Flow 3: Direct Review Pipeline}{12}{subsubsection.4.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.4}Flow 4: Direct Architectural Consultation}{13}{subsubsection.4.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}System Behavior and Determinism}{13}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Conclusion}{14}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Investigated Approaches for Compliance Checking Agent}{14}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Document Upload}{14}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Data Indexing and Chunking}{14}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Importance of Chunking}{14}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Types of Chunking}{15}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{Fixed-Size Chunking}{15}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{Sentence-Based Chunking}{15}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{Semantic-Based Chunking}{16}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{Document-Specific Chunking}{16}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{Agentic Chunking}{16}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Embedding}{16}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Word-Level Models}{17}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Contextual Embedding Models}{17}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sentence and Document Embedding Models}{17}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Token Efficiency and Data Representation}{17}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Token Counting Mechanism}{17}{subsubsection.5.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}TOON Formatting (Token-Oriented Object Notation)}{18}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Concept and Advantages}{18}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Implementation}{19}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Our Approach}{20}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Architecture Overview}{20}{subsection.5.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Rules Check agent's workflow}}{20}{figure.2}\protected@file@percent }
+\newlabel{fig:design}{{2}{20}{Rules Check agent's workflow}{figure.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Chunking Strategy}{20}{figure.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Threshold and maximum chunking tests}}{21}{figure.3}\protected@file@percent }
+\newlabel{fig:chunk_thresholds}{{3}{21}{Threshold and maximum chunking tests}{figure.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Embedding Model Selection}{21}{figure.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Reasoner: LLM-Based Compliance Engine}{22}{figure.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{Example Output}{23}{figure.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Pull Request Agent}{23}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Communication Behavior}{24}{section.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Pull request agent's workflow}}{24}{figure.4}\protected@file@percent }
+\newlabel{fig:design}{{4}{24}{Pull request agent's workflow}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Security Agent: Real-Time Line Validator}{25}{section.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Workflow diagram for Security Agent}}{25}{figure.5}\protected@file@percent }
+\newlabel{fig:design}{{5}{25}{Workflow diagram for Security Agent}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Operational Mechanism}{25}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Visual Feedback and Intent}{25}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Agent Evaluation: The Judge System}{26}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Evaluation Criteria}{26}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Performance Visualization}{26}{subsection.8.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Example performance plot}}{27}{figure.6}\protected@file@percent }
+\newlabel{fig:design}{{6}{27}{Example performance plot}{figure.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Implementation Details}{27}{section.9}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Application architecture}}{27}{figure.7}\protected@file@percent }
+\newlabel{fig:design}{{7}{27}{Application architecture}{figure.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Backend Architecture and Persistence}{28}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}VS Code Extension Integration}{28}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Communication Model}{29}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}File Retrieval System}{29}{subsection.9.4}\protected@file@percent }
+\gdef \@abspage@last{33}
