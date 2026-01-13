@@ -215,7 +215,8 @@ This section presents the design, responsibilities, and coordination logic of th
 
 The agents communicate exclusively through structured JSON messages, ensuring unambiguous, machine-readable interactions suitable for automated pipelines or scalable multi-model execution.
 
-\subsection{Main Agent}
+\subsection{Agent Overview}
+\subsubsection{Main Agent}
 
 The Main Agent serves as the orchestrator and central decision-making component of the system. It is the only agent permitted to communicate with the user directly. Its responsibilities include:
 
@@ -238,7 +239,7 @@ The Main Agent produces three types of JSON messages:
     \item \textbf{File Requests} when additional project files are required to continue the workflow.
 \end{enumerate}
 
-\subsection{Architecture Agent}
+\subsubsection{Architecture Agent}
 
 The Architecture Agent is responsible for evaluating and refactoring code from a structural and architectural perspective. Its role focuses on high-level software engineering principles, including modularity, maintainability, design patterns, and adherence to SOLID principles.
 
@@ -263,7 +264,7 @@ The Architecture Agent outputs:
 \paragraph{Communication Behavior}
 The Architecture Agent sends a JSON message back to the Main Agent, which then forwards the output to the Builder Agent for implementation of structural changes in new or existing files.
 
-\subsection{Builder Agent}
+\subsubsection{Builder Agent}
 
 The Builder Agent is the code implementation model responsible for generating and modifying program files based on instructions received from the Architecture Agent. It is a deterministic code generator with the following capabilities:
 
@@ -286,7 +287,7 @@ The Builder Agent outputs a structured JSON object that includes:
 \paragraph{Communication Behavior}
 The Builder Agent always forwards its output to the Review Agent. No direct communication with the user or the Architecture Agent occurs.
 
-\subsection{Review Agent}
+\subsubsection{Review Agent}
 
 The Review Agent functions as a readability and style correctness evaluator. It ensures that the generated code adheres to standard software quality guidelines related to:
 
